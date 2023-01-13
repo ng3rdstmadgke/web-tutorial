@@ -5,7 +5,7 @@ cat >&2 <<EOS
 コンテナ起動コマンド
 
 [usage]
- $0 [options] <CHAPTER>
+ $0 <CHAPTER> [options]
 
 [options]
  -h | --help:
@@ -21,6 +21,14 @@ cat >&2 <<EOS
       コンテナにshellでログイン
     jupyter
       JupyterLabを起動
+
+[example]
+ chapter1 で見本のアプリを起動する
+   $0 chapter1 --sample
+ chapter1 でshellを起動する
+   $0 chapter1 --mode shell
+ chapter1 でJupyterLabを起動する
+   $0 chapter1 --mode jupyter
 EOS
 exit 1
 }
@@ -82,11 +90,11 @@ fi
 if [ "$MODE" = "shell" ]; then
   CMD="/bin/bash"
 elif [ "$MODE" = "jupyter" ]; then
-  CMD="jupyter lab  --notebook-dir /opt/app/"
+  CMD="jupyter lab --ip=* --no-browser --notebook-dir /opt/app/"
 else 
   CMD="/entrypoint.sh"
 fi
-echo $LOCAL_APP_DIR
+echo $CMD
 docker run \
   --rm \
   -ti \

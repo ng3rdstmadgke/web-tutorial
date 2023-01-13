@@ -11,7 +11,7 @@ ENV https_proxy=$https_proxy
 ENV NO_PROXY=$no_proxy
 
 RUN apt update && \
-    apt install -y locales curl default-mysql-client jq unzip groff less vim fzf net-tools iputils-ping sudo tmux
+    apt install -y locales curl default-mysql-client jq unzip groff less vim fzf net-tools iputils-ping sudo tmux nodejs
 
 # ロケール設定
 RUN echo 'ja_JP.UTF-8 UTF-8' >> /etc/locale.gen && \
@@ -27,17 +27,16 @@ RUN groupadd -g $host_gid app && \
 COPY docker/fastapi/.private_bashrc /home/app/.private_bashrc
 RUN echo "source ~/.private_bashrc" >> /home/app/.bashrc
 
+# Jupyter Labインストール
+RUN pip install --upgrade pip && \
+    pip install jupyterlab
+
 # Pythonライブラリインストール
 COPY requirements.txt .
-RUN pip install --upgrade pip && \
-    pip install -r requirements.txt
+RUN pip install -r requirements.txt
 
-# Jupyter Labインストール
-RUN pip install jupyterlab
-
-RUN mkdir -p /opt/app
-WORKDIR /opt/app
-
+# エントリーポイント
 COPY docker/fastapi/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
+
 CMD ["/entrypoint.sh"]

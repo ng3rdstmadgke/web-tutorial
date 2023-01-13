@@ -135,6 +135,8 @@ exit;
 
 ## JupyterLab起動
 
+`Ptutorial/chapter2/sample/sqlalchemy_tutorial.ipynb` を参考に実装してみよう。
+
 ```bash
 ./bin/run.sh chapter2 --mode jupyter
 ```

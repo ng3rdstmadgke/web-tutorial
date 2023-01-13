@@ -51,10 +51,7 @@ docker run \
   --rm \
   --network host \
   --name fastapi-tutorial-mysql \
-  -e MYSQL_USER=$DB_USER \
-  -e MYSQL_PASSWORD=$DB_PASSWORD \
-  -e MYSQL_DATABASE=app \
-  -e MYSQL_ROOT_PASSWORD=$DB_ROOT_PASSWORD \
+  -e MYSQL_ROOT_PASSWORD=$DB_PASSWORD \
   fastapi-tutorial-mysql:latest
 
 docker run \

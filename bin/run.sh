@@ -101,6 +101,7 @@ docker run \
   --network host \
   --env-file "$ENV_PATH" \
   --user="$(id -u):$(id -g)" \
+  -w /opt/app \
   -v ${LOCAL_APP_DIR}:/opt/app \
   fastapi-tutorial:latest \
   $CMD

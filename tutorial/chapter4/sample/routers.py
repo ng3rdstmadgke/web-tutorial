@@ -1,11 +1,16 @@
 from typing import List
+from datetime import timedelta, datetime
 
 from sqlalchemy.orm import Session
 from fastapi import Depends, APIRouter, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import Depends, APIRouter, HTTPException, status
+from jose import jwt, JWTError
 
 from db.db import get_session
 from db.model import User, Item
 import auth
+from env import Environment
 from schemas import (
     UserResponseSchema,
     UserPostSchema,
@@ -73,3 +78,31 @@ def delete_user(
     session.delete(user)
     session.commit()
     return {"user_id": user_id}
+
+# トークン取得API
+@router.post("/token")
+def login_for_access_token(
+    session: Session = Depends(get_session),
+    form_data: OAuth2PasswordRequestForm = Depends()
+):
+    env = Environment()
+    # OAuth2PasswordRequestForm は username, password, scope, grant_type といったメンバを持つ
+    # https://fastapi.tiangolo.com/tutorial/security/simple-oauth2/#oauth2passwordrequestform
+    user = session.query(User).filter(User.username == form_data.username).first()
+    if (user is None) or (not auth.verify_password(form_data.password, user.hashed_password)):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    payload={
+        # JWT "sub" Claim : https://openid-foundation-japan.github.io/draft-ietf-oauth-json-web-token-11.ja.html#subDef
+        "sub": user.username,
+        "scopes": [],
+        "exp": datetime.utcnow() + timedelta(minutes=env.token_expire_minutes)
+    }
+
+    # トークンの生成
+    access_token = jwt.encode(payload, env.token_secret_key, algorithm=env.token_algorithm)
+    return {"access_token": access_token, "token_type": "bearer"}

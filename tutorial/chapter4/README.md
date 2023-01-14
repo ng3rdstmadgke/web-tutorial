@@ -239,7 +239,92 @@ def delete_user(
 
 ## ブラウザで確認してみましょう
 
+```bash
+# アプリを起動
+./bin/run.sh chapter4 --mode app
+```
 
+http://127.0.0.1:8018/docs にブラウザでアクセスしてみましょう。
+
+
+# ■ ログイン用のAPIを作成する
+
+参考: [JWT token with scopes | FastAPI](https://fastapi.tiangolo.com/ja/advanced/security/oauth2-scopes/?h=token#jwt-token-with-scopes)
+
+usernameとpasswordを受け取ってtokenを生成するAPIを実装していきます。
+
+まず、環境変数に token_expire_minute (トークンの有効期限) , token_secret_key (トークンを暗号化する秘密鍵) , token_algorithm (トークンの暗号化方式) を追加していきます。
+
+```python
+# -- env.py --
+
+from pydantic import BaseSettings
+
+class Environment(BaseSettings):
+    # ... 略 ...
+    token_expire_minutes: int = 480
+    token_secret_key: str = "1234567890"
+    token_algorithm: str = "HS256"
+```
+
+次に、 `auth.py` に入力されたパスワードとDBに登録しあるパスワードの検証をおなう関数を追加します。
+
+```python
+# -- auth.py --
+
+# ... 略 ...
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """plain_passwordが正しいパスワードかを検証する"""
+    return pwd_context.verify(plain_password, hashed_password)
+```
+
+最後に、トークンを取得するAPIを追加します。
+
+```python
+# -- routers.py --
+
+# ... 略 ...
+
+from env import Environment
+from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import Depends, APIRouter, HTTPException, status
+from datetime import timedelta, datetime
+from jose import jwt, JWTError
+
+# ... 略 ...
+
+
+# トークン取得API
+@router.post("/token")
+def login_for_access_token(
+    session: Session = Depends(get_session),
+    form_data: OAuth2PasswordRequestForm = Depends()
+):
+    env = Environment()
+    # OAuth2PasswordRequestForm は username, password, scope, grant_type といったメンバを持つ
+    # https://fastapi.tiangolo.com/tutorial/security/simple-oauth2/#oauth2passwordrequestform
+    user = session.query(User).filter(User.username == form_data.username).first()
+    if (user is None) or (not auth.verify_password(form_data.password, user.hashed_password)):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    payload={
+        # JWT "sub" Claim : https://openid-foundation-japan.github.io/draft-ietf-oauth-json-web-token-11.ja.html#subDef
+        "sub": user.username,
+        "scopes": [],
+        "exp": datetime.utcnow() + timedelta(minutes=env.token_expire_minutes)
+    }
+
+    # トークンの生成
+    access_token = jwt.encode(payload, env.token_secret_key, algorithm=env.token_algorithm)
+    return {"access_token": access_token, "token_type": "bearer"}
+```
+
+## ブラウザで確認してみましょう
 
 ```bash
 # アプリを起動

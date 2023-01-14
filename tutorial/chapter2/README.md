@@ -124,7 +124,7 @@ exit;
 # 開発用shellを起動
 ./bin/run.sh chapter2 --mode shell
 
-# MySQLにログイン
+# データベースを作成
 MYSQL_PWD=$DB_PASSWORD mysql -u $DB_USER -h $DB_HOST -P $DB_PORT -e "CREATE DATABASE IF NOT EXISTS chapter2"
 ```
 

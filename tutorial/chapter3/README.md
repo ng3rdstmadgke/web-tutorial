@@ -6,16 +6,8 @@
 # 開発用shellを起動
 ./bin/run.sh chapter3 --mode shell
 
-# MySQLにログイン
-MYSQL_PWD=$DB_PASSWORD mysql -u $DB_USER -h $DB_HOST -P $DB_PORT
-```
-
-```sql
--- データベースの作成
-CREATE DATABASE IF NOT EXISTS chapter3;
-
--- MySQLからログアウト
-exit;
+# データベースを作成
+MYSQL_PWD=$DB_PASSWORD mysql -u $DB_USER -h $DB_HOST -P $DB_PORT -e "CREATE DATABASE IF NOT EXISTS chapter3"
 ```
 
 # ■ モデルの実装

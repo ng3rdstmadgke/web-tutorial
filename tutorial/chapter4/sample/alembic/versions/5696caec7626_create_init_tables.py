@@ -1,8 +1,8 @@
-"""create initial table
+"""create init tables
 
-Revision ID: de6391e46756
+Revision ID: 5696caec7626
 Revises: 
-Create Date: 2023-01-14 09:37:23.484696
+Create Date: 2023-01-14 13:02:06.953003
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = 'de6391e46756'
+revision = '5696caec7626'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -22,6 +22,7 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('username', sa.String(length=255, collation='utf8mb4_bin'), nullable=False),
     sa.Column('hashed_password', sa.String(length=255), nullable=False),
+    sa.Column('age', sa.Integer(), nullable=True),
     sa.Column('created', sa.DateTime(), nullable=False),
     sa.Column('updated', sa.DateTime(), nullable=False),
     sa.PrimaryKeyConstraint('id'),

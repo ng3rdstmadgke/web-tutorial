@@ -1,5 +1,5 @@
 # Note
-このドキュメントでは `tutorial/chapter1/src` をルートディレクトリとして解説します。
+このドキュメントでは `bin` 配下のコマンド以外は `tutorial/chapter1/src` をルートディレクトリとして解説します。
 
 # FastAPIに触れてみましょう
 

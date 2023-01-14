@@ -1,4 +1,7 @@
-# ■ SQLを実行してみる
+# Note
+このドキュメントでは `bin` 配下のコマンド以外は `tutorial/chapter2/src` をルートディレクトリとして解説します。
+
+# ■ SQLを実行してみましょう
 
 開発コンテナのshellを起動
 
@@ -6,13 +9,13 @@
 ./bin/run.sh chapter2 --sample --mode shell
 ```
 
-## MySQLにログイン
+MySQLにログイン
 
 ```bash
-MYSQL_PWD=root1234 mysql -u root -h 127.0.0.1 -P 63306
+MYSQL_PWD=$DB_PASSWORD mysql -u $DB_USER -h $DB_HOST -P $DB_PORT
 ```
 
-## データベースを作成
+データベースを作成
 
 ```sql
 -- データベースの新規作成
@@ -25,7 +28,7 @@ SHOW DATABASES;
 USE chapter2
 ```
 
-## テーブルを作成
+テーブルを作成
 
 ```sql
 -- テーブルを作成
@@ -44,7 +47,7 @@ SHOW TABLES;
 DESC users;
 ```
 
-## データの操作
+データの操作
 
 ```sql
 -- データの挿入
@@ -69,7 +72,7 @@ UPDATE chapter2.users SET name='midorikawa', age=32 WHERE name='sato';
 DELETE FROM chapter2.users WHERE id=3;
 ```
 
-## 【発展】リレーション
+【発展】リレーション
 
 ```sql
 -- usersに紐づくitemsテーブルを追加
@@ -94,7 +97,7 @@ SELECT users.id, users.name, items.title, items.content FROM users INNER JOIN it
 SELECT * FROM users LEFT OUTER JOIN items ON users.id = items.user_id;
 ```
 
-## テーブル・データベースの削除
+テーブル・データベースの削除
 
 ```sql
 -- テーブルの中身をすべて削除する
@@ -122,21 +125,13 @@ exit;
 ./bin/run.sh chapter2 --mode shell
 
 # MySQLにログイン
-MYSQL_PWD=root1234 mysql -u root -h 127.0.0.1 -P 63306
-```
-
-```sql
--- データベースの作成
-CREATE DATABASE IF NOT EXISTS chapter2;
-
--- MySQLからログアウト
-exit;
+MYSQL_PWD=$DB_PASSWORD mysql -u $DB_USER -h $DB_HOST -P $DB_PORT -e "CREATE DATABASE IF NOT EXISTS chapter2"
 ```
 
 ## JupyterLab起動
 
-`Ptutorial/chapter2/sample/sqlalchemy_tutorial.ipynb` を参考に実装してみよう。
-
 ```bash
 ./bin/run.sh chapter2 --mode jupyter
 ```
+
+`tutorial/chapter2/sample/sqlalchemy_tutorial.ipynb` の実装を参考に、SQLAlchemyを利用してPythonからデータベースを操作してみましょう。

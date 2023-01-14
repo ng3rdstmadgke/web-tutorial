@@ -1,6 +1,12 @@
 # Note
 このドキュメントでは `bin` 配下のコマンド以外は `tutorial/chapter2/src` をルートディレクトリとして解説します。
 
+# ■ mysqlを起動しましょう
+
+```bash
+./bin/mysql.sh
+```
+
 # ■ SQLを実行してみましょう
 
 開発コンテナのshellを起動

@@ -1,6 +1,14 @@
 # Note
 このドキュメントでは `bin` 配下のコマンド以外は `tutorial/chapter3/src` をルートディレクトリとして解説します。
 
+# ■ mysqlを起動しましょう
+
+※ 起動していない場合のみ
+
+```bash
+./bin/mysql.sh
+```
+
 # ■ データベースの作成
 ```bash
 # 開発用shellを起動

@@ -39,7 +39,7 @@ class Environment(BaseSettings):
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from ..env import Environment
+from env import Environment
 
 # 環境変数を利用してDBのURLを生成
 env = Environment()

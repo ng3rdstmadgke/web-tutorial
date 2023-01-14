@@ -17,3 +17,19 @@ class UserPostSchema(BaseModel):
 class UserPutSchema(BaseModel):
     password: str
     age: int
+
+class ItemResponseSchema(BaseModel):
+    id: int
+    title: str
+    content: str
+
+    class Config:
+        orm_mode = True
+
+class ItemPostSchema(BaseModel):
+    title: str
+    content: str
+
+class ItemPutSchema(BaseModel):
+    title: str
+    content: str

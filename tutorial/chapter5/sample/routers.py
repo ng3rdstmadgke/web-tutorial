@@ -1,6 +1,7 @@
 from typing import List
 from datetime import timedelta, datetime
 
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 from fastapi import Depends, APIRouter, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
@@ -15,7 +16,11 @@ from schemas import (
     UserResponseSchema,
     UserPostSchema,
     UserPutSchema,
+    ItemResponseSchema,
+    ItemPostSchema,
+    ItemPutSchema,
 )
+
 
 router = APIRouter()
 
@@ -106,3 +111,71 @@ def login_for_access_token(
     # トークンの生成
     access_token = jwt.encode(payload, env.token_secret_key, algorithm=env.token_algorithm)
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+# アイテムの新規作成
+@router.post("/items/", response_model=ItemResponseSchema)
+async def create(
+    # request form and files: https://fastapi.tiangolo.com/tutorial/request-forms-and-files/
+    data: ItemPostSchema,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(auth.get_current_user)
+):
+    item = Item(title=data.title, content=data.content)
+    current_user.items.append(item)
+    session.add(current_user)
+    session.commit()
+    session.refresh(item)
+    return item
+
+
+# アイテムの一覧
+@router.get("/items/", response_model=List[ItemResponseSchema])
+def get_list(
+    skip: int = 0,
+    limit: int = 100,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(auth.get_current_user)
+):
+    items = session.query(Item).filter(Item.user_id == current_user.id).offset(skip).limit(limit).all()
+    return items
+
+
+# アイテムの更新
+@router.put("/items/{item_id}", response_model=ItemResponseSchema)
+async def update(
+    item_id: int,
+    data: ItemPostSchema,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(auth.get_current_user)
+):
+    item = session.query(Item).filter(and_(Item.id == item_id, Item.user_id == current_user.id)).first()
+    if item is None:
+        raise HTTPException(status_code=404, detail="item not found")
+
+    try:
+        item.title = data.title
+        item.content = data.content
+        session.add(item)
+        session.commit()
+        session.refresh(item)
+        return item
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+# アイテムの削除
+@router.delete("/items/{item_id}")
+def delete(
+    item_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(auth.get_current_user)
+):
+    item = session.query(Item).filter(and_(Item.id == item_id, Item.user_id == current_user.id)).first()
+    if item is None:
+        raise HTTPException(status_code=404, detail="item not found")
+    try:
+        session.delete(item)
+        session.commit()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+    return {"item_id": item_id}

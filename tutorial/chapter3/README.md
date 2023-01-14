@@ -47,7 +47,7 @@ SQLALCHEMY_DATABASE_URL = f"mysql+pymysql://{env.db_user}:{env.db_password}@{env
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit = False, autoflush = True, bind=engine)
 
-def get_db():
+def get_session():
     """DBのセッションを生成する関数。
     1リクエスト1セッションの想定で、 レスポンスが返却される際に自動でcloseされる。
     いちいち with SessionLocal() as session: をやるのが面倒なのでこうする。

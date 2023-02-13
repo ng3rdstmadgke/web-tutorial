@@ -33,7 +33,7 @@ from pydantic import BaseSettings
 
 class Environment(BaseSettings):
     db_user: str
-    db_password: set
+    db_password: str
     db_port: str
     db_host: str
     db_name: str = "chapter3"
@@ -259,7 +259,7 @@ alembicコマンドには `upgrade head` 以外にもバージョンをコント
 # ひとつ前のバージョンにロールバック
 alembic downgrade -1
 
-# 一つ次のバージョンにアップグレード:w
+# 一つ次のバージョンにアップグレード
 alembic upgrade +1
 
 # マイグレーション履歴の確認

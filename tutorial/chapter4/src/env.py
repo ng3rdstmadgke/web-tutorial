@@ -5,7 +5,7 @@ class Environment(BaseSettings):
     pydanticを利用した環境変数の読み込み: https://fastapi.tiangolo.com/advanced/settings/#environment-variables
     """
     db_user: str
-    db_password: set
+    db_password: str
     db_port: str
     db_host: str
     db_name: str = "chapter4"

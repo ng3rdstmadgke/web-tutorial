@@ -209,7 +209,7 @@ def update_user(
         raise HTTPException(status_code=404, detail=f"User is not found. (id={user_id})")
 
     # リクエストで受け取った password と age を設定して保存
-    user.password = data.password
+    user.hashed_password = auth.hash(data.password)
     user.age = data.age
     session.add(user)
     session.commit()

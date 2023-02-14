@@ -59,7 +59,7 @@ def update_user(
     user = session.query(User).filter(User.id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail=f"User is not found. (id={user_id})")
-    user.password = data.password
+    user.hashed_password = auth.hash(data.password)
     user.age = data.age
     session.add(user)
     session.commit()

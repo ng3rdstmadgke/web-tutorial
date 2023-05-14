@@ -1,0 +1,41 @@
+@startuml sampleTables
+entity users {
+  * id INT auto_increment (PK)
+  ---
+  * username VARCHAR(255)
+  * hashed_password VARCHAR(255)
+  * created DATETIME
+  * updated DATETIME
+}
+
+entity items {
+  * id int auto_increment (PK)
+  ---
+  * user_id INT (FK)
+  * title VARCHAR(64)
+  * content VARCHAR(128)
+  * created DATETIME
+  * updated DATETIME
+}
+
+entity user_roles {
+  * id INT auto_increment (PK)
+  ---
+  * user_id INT (FK)
+  * role_id INT (FK)
+  * created DATETIME
+  * updated DATETIME
+}
+
+entity roles {
+  * id INT auto_increment (PK)
+  ---
+  * name ENUM
+  * created DATETIME
+  * updated DATETIME
+}
+
+users ||--o{ items
+users |o--o{ user_roles
+roles |o--o{ user_roles
+@enduml

@@ -1,5 +1,7 @@
 # Note
-このドキュメントでは `bin` 配下のコマンド以外は `tutorial/chapter2/src` をルートディレクトリとして解説します。
+
+このドキュメントでは `bin` 配下のコマンド以外は `tutorial/chapter2/src` をルートディレクトリとして解説します。  
+chapter2では、まずMySQLを利用して基本的なデータベースの操作を学び、そのあとに、PythonからSQLAlchemyを利用してデータベースを操作する方法を学びます。
 
 # ■ mysqlを起動しましょう
 

@@ -174,14 +174,22 @@ FastAPIでは、 `pydantic` を利用して、リクエスト・レスポンス�
 ```python
 # -- schemas.py --
 
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel
+
+class RoleSchema(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        orm_mode = True
 
 class UserResponseSchema(BaseModel):
     """レスポンスで返却する項目と型を定義するクラス"""
     id: int
     username: str
     age: Optional[int]
+    roles: List[RoleSchema]
 
     class Config:
         # orm_mode = True とすると、DBのレスポンスをシームレスにオブジェクトに変換できる
@@ -192,6 +200,7 @@ class UserPostSchema(BaseModel):
     username: str
     password: str
     age: int
+    role_ids: List[int]
 ```
 
 APIの本体を実装します。
@@ -216,7 +225,7 @@ from sqlalchemy.orm import Session
 from fastapi import Depends, APIRouter, HTTPException
 
 from session import get_session
-from model import User, Item
+from model import User, Item, Role
 import auth
 from schemas import (
     UserResponseSchema,
@@ -235,10 +244,18 @@ def create_user(
     if user:
         raise HTTPException(status_code=400, detail=f"{data.username} is already exists.")
 
+    roles = []
+    for role_id in data.role_ids:
+        role = session.query(Role).filter(Role.id == role_id).first()
+        if role is None:
+            raise HTTPException(status_code=404, detail=f"Role is not found. (id={role_id})")
+        roles.append(role)
+
     user = User(
         username=data.username,
-        hashed_password=auth.hash(data.password),  # パスワードはハッシュ化して登録
+        hashed_password=auth.hash(data.password),
         age=data.age,
+        roles=roles,
     )
     session.add(user)
     session.commit()
@@ -277,7 +294,7 @@ app.include_router(router, prefix="/api/v1")
 
 # ユーザー取得
 @router.get("/users/{user_id}", response_model=UserResponseSchema)
-def read_users(
+def read_user(
     user_id: int,
     session: Session = Depends(get_session),
 ):
@@ -326,6 +343,7 @@ def read_users(
 class UserPutSchema(BaseModel):
     password: str
     age: int
+    role_ids: List[int]
 ```
 
 ユーザーの一覧はPUTメソッドでリクエストされるため、 `@router.put("/users/{user_id}", response_model=UserResponseSchema)` のようにルートを定義します。  
@@ -338,7 +356,7 @@ class UserPutSchema(BaseModel):
 from schemas import (
     UserResponseSchema,
     UserPostSchema,
-    UserPutSchema,
+    UserPutSchema,  # 追加
 )
 
 # ... 略 ...
@@ -355,9 +373,18 @@ def update_user(
     if user is None:
         raise HTTPException(status_code=404, detail=f"User is not found. (id={user_id})")
 
+    # idからロールを取得
+    roles = []
+    for role_id in data.role_ids:
+        role = session.query(Role).filter(Role.id == role_id).first()
+        if role is None:
+            raise HTTPException(status_code=404, detail=f"Role is not found. (id={role_id})")
+        roles.append(role)
+
     # リクエストで受け取った password と age を設定して保存
     user.hashed_password = auth.hash(data.password)
     user.age = data.age
+    user.roles = roles
     session.add(user)
     session.commit()
     session.refresh(user)
@@ -403,7 +430,8 @@ http://127.0.0.1:8018/docs にブラウザでアクセスしてみましょう�
 
 # ■ ログイン用のAPIを作成する
 
-参考: [JWT token with scopes | FastAPI](https://fastapi.tiangolo.com/ja/advanced/security/oauth2-scopes/?h=token#jwt-token-with-scopes)
+- [基本から理解するJWTとJWT認証の仕組み](https://developer.mamezou-tech.com/blogs/2022/12/08/jwt-auth/)
+- [JWT token with scopes | FastAPI](https://fastapi.tiangolo.com/ja/advanced/security/oauth2-scopes/?h=token#jwt-token-with-scopes)
 
 usernameとpasswordを受け取ってtokenを生成するAPIを実装していきます。
 

@@ -1,11 +1,19 @@
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel
+
+class RoleSchema(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        orm_mode = True
 
 class UserResponseSchema(BaseModel):
     """レスポンスで返却する項目と型を定義するクラス"""
     id: int
     username: str
     age: Optional[int]
+    roles: List[RoleSchema]
 
     class Config:
         # orm_mode = True とすると、DBのレスポンスをシームレスにオブジェクトに変換できる
@@ -16,7 +24,9 @@ class UserPostSchema(BaseModel):
     username: str
     password: str
     age: int
+    role_ids: List[int]
 
 class UserPutSchema(BaseModel):
     password: str
     age: int
+    role_ids: List[int]

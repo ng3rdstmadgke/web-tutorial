@@ -1,8 +1,8 @@
 """add age column to users table
 
-Revision ID: 6ada79cba7f4
-Revises: de6391e46756
-Create Date: 2023-01-14 10:05:36.856985
+Revision ID: 906ffd5a0ff5
+Revises: 8b66834003bf
+Create Date: 2023-05-16 16:35:20.516240
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '6ada79cba7f4'
-down_revision = 'de6391e46756'
+revision = '906ffd5a0ff5'
+down_revision = '8b66834003bf'
 branch_labels = None
 depends_on = None
 

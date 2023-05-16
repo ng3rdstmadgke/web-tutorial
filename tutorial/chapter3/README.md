@@ -279,6 +279,44 @@ def downgrade() -> None:
     # ### end Alembic commands ###
 ```
 
+マイグレーションファイルに処理を追加してみましょう。  
+ロールは `SYSTEM_ADMIN` `LOCATION_ADMIN` `LOCATION_OPERATOR` の3つのみなので、マイグレーションファイル内で登録します。
+
+```python
+# -- alembic/versions/XXXXXXXXXXXXXXXXXXXX_create_initial_table.py --
+
+# ... 略 ...
+from datetime import datetime
+from model import RoleType
+
+def upgrade() -> None:
+    # rolesテーブルのcreate_tableの戻り値を roles_table に代入
+    roles_table = op.create_table('roles',
+    # ... 略 ...
+    now = datetime.now()
+    op.bulk_insert(roles_table, [
+        {
+            'id': 1,
+            "name": RoleType.SYSTEM_ADMIN.value,
+            "created": now,
+            "updated": now
+        },
+        {
+            'id': 2,
+            "name": RoleType.LOCATION_ADMIN.value,
+            "created": now,
+            "updated": now
+        },
+        {
+            'id': 3,
+            "name": RoleType.LOCATION_OPERATOR.value,
+            "created": now,
+            "updated": now
+        },
+    ])
+
+```
+
 
 マイグレーションを実行します
 

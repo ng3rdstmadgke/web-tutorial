@@ -7,8 +7,8 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import Depends, APIRouter, HTTPException, status
 from jose import jwt, JWTError
 
-from db.db import get_session
-from db.model import User, Item
+from session import get_session
+from model import User, Item
 import auth
 from env import Environment
 from schemas import (
@@ -22,7 +22,7 @@ router = APIRouter()
 # ユーザー作成
 @router.post("/users/", response_model=UserResponseSchema)
 def create_user(
-   data: UserPostSchema, 
+    data: UserPostSchema, 
     session: Session = Depends(get_session),
 ):
     user = session.query(User).filter(User.username == data.username).first()
@@ -49,6 +49,17 @@ def read_users(
     users = session.query(User).offset(skip).limit(limit).all()
     return users
 
+# ユーザー取得
+@router.get("/users/{user_id}", response_model=UserResponseSchema)
+def read_users(
+    user_id: int,
+    session: Session = Depends(get_session),
+):
+    user = session.query(User).filter(User.id == user_id).first()
+    if user is None:
+        raise HTTPException(status_code=404, detail=f"User is not found. (id={user_id})")
+    return user
+
 # ユーザー更新
 @router.put("/users/{user_id}", response_model=UserResponseSchema)
 def update_user(
@@ -56,9 +67,12 @@ def update_user(
     data: UserPutSchema,
     session: Session = Depends(get_session),
 ):
+    # ユーザーの存在チェック。更新対象のユーザーが存在しなければ404エラー
     user = session.query(User).filter(User.id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail=f"User is not found. (id={user_id})")
+
+    # リクエストで受け取った password と age を設定して保存
     user.hashed_password = auth.hash(data.password)
     user.age = data.age
     session.add(user)
@@ -72,6 +86,7 @@ def delete_user(
     user_id: int,
     session: Session = Depends(get_session),
 ):
+    # ユーザーの存在チェック。更新対象のユーザーが存在しなければ404エラー
     user = session.query(User).filter(User.id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail=f"User is not found. (id={user_id})")

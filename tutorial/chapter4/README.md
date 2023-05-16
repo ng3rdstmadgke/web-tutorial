@@ -1,5 +1,7 @@
 # Note
-このドキュメントでは `bin` 配下のコマンド以外は `tutorial/chapter4/src` をルートディレクトリとして解説します。
+
+このドキュメントでは `bin` 配下のコマンド以外は `tutorial/chapter4/src` をルートディレクトリとして解説します。  
+chapter4では、userの登録・閲覧・編集・削除を行うAPIを作成します。  
 
 # ■ mysqlを起動しましょう
 
@@ -8,6 +10,7 @@
 ```bash
 ./bin/mysql.sh
 ```
+
 
 # ■ テーブルの作成
 
@@ -22,15 +25,138 @@ MYSQL_PWD=$DB_PASSWORD mysql -u $DB_USER -h $DB_HOST -P $DB_PORT -e "CREATE DATA
 alembic upgrade head
 ```
 
+# ■ pydantic を使ってみましょう
+
+FastAPIで欠かせないライブラリが `pydantic` です。ここでは `pydantic` のメリットや実際にどのように利用するのかを学習しましょう。
+
+従来のPythonプログラムでは、データを配列や辞書形式で扱うことが多かったのではないでしょうか。  
+Pythonは動的型付け言語なので、型に関する制約がゆるく、型を意識せずともなんとなく書けてしまうといった特徴があります。  
+しかし、型が緩く、データを配列や辞書で扱うといった特徴は、継続的な運用と開発が行われるシステムにおいては非常に大きなデメリットととなります。
+
+次の関数を見てください。この関数が引数としてどのようなデータを受け取って、戻り値としてどのようなデータを返却するかわかるでしょうか。  
+
+```python
+def create_user(session, data):
+    ret = {
+        "roles" = []
+    }
+    user = session.query(User).filter(User.username == data["user"]["username"]).first()
+    if user:
+        raise HTTPException(status_code=400, detail="Username already registerd")
+    roles = []
+    for e in data["roles"]:
+        role = session.query(Role).filter(Role.name == e["name"]).first()
+        roles.append(role if (role) else Role(name=e["name"]))
+    user = User(
+        username=data["user"]["username"],
+        hashed_password=auth.get_password_hash(data.["user"]["password"]),
+        age=data["user"]["age"],
+        roles=roles,
+    )
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    ret["id"] = user.id
+    ret["username"] = user.username
+    ret["age"] = user.age
+    for item in user.roles:
+        ret["roles"]["name"] = item.name
+    return ret
+```
+
+おそらくぱっと見でわかる人はいないでしょう。例はまだましな部類ですが、運用を続けていくと機能はより複雑になり、数も増えていきます。  
+そうなると、この関数とそれを利用するコードの修正コストは非常に大きくなり、バグも発生しやすくなります。 (システムの硬直化と言ったりします)
+
+それを解決するのが `pydantic` というライブラリです。
+このライブラリ、機能としてはクラスと辞書とjsonをシームレスに変換するだけですので、少し使い方を確認してみましょう。
+
+```python
+from datetime import datetime
+from typing import List, Optional
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    id: int
+    username: str
+    age: int
+
+data = {
+    "id": 1,
+    "username": "yamada",
+    "age": 35,
+}
+
+# dataをUserオブジェクトに変換
+user = User.parse_obj(data)
+print(user)  # id=1 username='yamada' age=35
+
+# Userオブジェクトをdictに変換
+user_dict = user.dict()
+print(user_dict)  # {'id': 1, 'username': 'yamada', 'age': 35}
+
+# Userオブジェクトをjsonに変換
+user_json = user.json()
+print(user_json)  # {"id": 1, "username": "yamada", "age": 35}
+```
+
+機能としてはシンプルですが、これを先ほどの関数の引数と戻り値の型に適用すると、受け取る値と返す値が明確になり、修正しやすくバグが発生しにくいコードとなります。  
+FastAPIではこの `pydantic` を使って、APIが受け取る値と返す値の構造を明確に定義します。
+
+
+```python
+from typing import List, Optional
+from pydantic import BaseModel
+
+class User(BaseModel):
+    username: str
+    password: str
+    age: int
+
+class Role(BaseModel):
+    name: str
+
+class RequestData(BaseModel):
+    user: User
+    roles: List[Role]
+
+class ResponseData(BaseModel):
+    id: int
+    username: str
+    age: int
+    roles: List[Role]
+
+def create_user(session: Session, data: RequestData) -> ResponseData :
+    user = session.query(User).filter(User.username == data.user.username).first()
+    if user:
+        raise HTTPException(status_code=400, detail="Username already registerd")
+    roles = []
+    for e in data.roles:
+        role = session.query(Role).filter(Role.name == e.name).first()
+        roles.append(role if (role) else Role(name=e.name))
+    user = User(
+        username=data.user.username,
+        hashed_password=auth.get_password_hash(data.user.password),
+        age=data.user.age,
+        roles=roles,
+    )
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    return ResponseData.from_orm(user)
+```
+
 
 # ■ ユーザーのCRUDを実装してみましょう
 
 
 ## ユーザー作成API
 
-username, password, ageをPOSTで受け取って、ユーザー作成を行うAPIを実装します。
+username, password, ageをPOSTで受け取って、ユーザー作成を行うAPIを実装してみましょう。
 
-まず、パスワードをハッシュ化する関数を `auth.py` に実装します。
+パスワードはプレーンテキストでDBに保存するわけにはいかないので、不可逆のハッシュ値に変換します。  
+`auth.py` にパスワードをハッシュ化する関数を実装しましょう。
+
 
 ```python
 # -- auth.py --
@@ -42,7 +168,7 @@ def hash(plain_password: str) -> str:
     return pwd_context.hash(plain_password)
 ```
 
-次に、POSTで受け取るデータとレスポンスで返却するデータの構造をクラスとして定義します。
+次に、POSTで受け取るデータとレスポンスで返却するデータの構造をクラスとして定義しましょう。
 FastAPIでは、 `pydantic` を利用して、リクエスト・レスポンスデータをオブジェクトとして扱います。
 
 ```python
@@ -82,14 +208,15 @@ FastAPIはフレームワーク自体にDIの仕組みがあります。 ( [Depe
 
 
 ```python
-# -- routers --
+# -- routers.py --
+
 from typing import List
 
 from sqlalchemy.orm import Session
 from fastapi import Depends, APIRouter, HTTPException
 
-from db.db import get_session
-from db.model import User, Item
+from session import get_session
+from model import User, Item
 import auth
 from schemas import (
     UserResponseSchema,
@@ -101,23 +228,21 @@ router = APIRouter()
 # ユーザー作成
 @router.post("/users/", response_model=UserResponseSchema)
 def create_user(
-    data: UserPostSchema,
-    db: Session = Depends(get_session),
+    data: UserPostSchema, 
+    session: Session = Depends(get_session),
 ):
-    # ユーザーの存在チェック
-    user = db.query(User).filter(User.username == data.username).first()
+    user = session.query(User).filter(User.username == data.username).first()
     if user:
         raise HTTPException(status_code=400, detail=f"{data.username} is already exists.")
 
-    # ユーザーの作成
     user = User(
         username=data.username,
         hashed_password=auth.hash(data.password),  # パスワードはハッシュ化して登録
         age=data.age,
     )
-    db.add(user)
-    db.commit()
-    db.refresh(user)
+    session.add(user)
+    session.commit()
+    session.refresh(user)
     return user
 ```
 
@@ -138,6 +263,28 @@ from routers import router
 app = FastAPI()
 
 app.include_router(router, prefix="/api/v1")
+```
+
+## ユーザー取得API
+
+ユーザーIDを指定してユーザーを取得するAPIを実装します。
+
+ユーザーの取得はGETメソッドでリクエストされるため、 `@router.get("/users/{user_id}", response_model=UserResponseSchema)` のようにルートを定義します。  
+取得するユーザーはユーザーIDで指定するのでパスパラメータに `user_id` を設定します。
+
+```python
+# -- routers.py --
+
+# ユーザー取得
+@router.get("/users/{user_id}", response_model=UserResponseSchema)
+def read_users(
+    user_id: int,
+    session: Session = Depends(get_session),
+):
+    user = session.query(User).filter(User.id == user_id).first()
+    if user is None:
+        raise HTTPException(status_code=404, detail=f"User is not found. (id={user_id})")
+    return user
 ```
 
 ## ユーザー一覧API
@@ -236,6 +383,7 @@ def delete_user(
     user_id: int,
     session: Session = Depends(get_session),
 ):
+    # ユーザーの存在チェック。更新対象のユーザーが存在しなければ404エラー
     user = session.query(User).filter(User.id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail=f"User is not found. (id={user_id})")

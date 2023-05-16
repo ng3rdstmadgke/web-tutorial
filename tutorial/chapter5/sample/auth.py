@@ -3,8 +3,8 @@ from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from jose import jwt, JWTError
-from db.db import get_session
-from db.model import User
+from session import get_session
+from model import User
 from env import Environment
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

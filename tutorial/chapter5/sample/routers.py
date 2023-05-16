@@ -21,6 +21,8 @@ from schemas import (
     ItemPutSchema,
 )
 
+from permission_service import PermissionType
+
 
 router = APIRouter()
 
@@ -152,7 +154,7 @@ async def create(
     # request form and files: https://fastapi.tiangolo.com/tutorial/request-forms-and-files/
     data: ItemPostSchema,
     session: Session = Depends(get_session),
-    current_user: User = Depends(auth.get_current_user)
+    current_user: User = Depends(auth.get_current_user([PermissionType.ITEM_CREATE]))
 ):
     item = Item(title=data.title, content=data.content)
     current_user.items.append(item)
@@ -168,7 +170,7 @@ def get_list(
     skip: int = 0,
     limit: int = 100,
     session: Session = Depends(get_session),
-    current_user: User = Depends(auth.get_current_user)
+    current_user: User = Depends(auth.get_current_user([PermissionType.ITEM_READ]))
 ):
     items = session.query(Item).filter(Item.user_id == current_user.id).offset(skip).limit(limit).all()
     return items
@@ -180,7 +182,7 @@ async def update(
     item_id: int,
     data: ItemPostSchema,
     session: Session = Depends(get_session),
-    current_user: User = Depends(auth.get_current_user)
+    current_user: User = Depends(auth.get_current_user([PermissionType.ITEM_UPDATE]))
 ):
     item = session.query(Item).filter(and_(Item.id == item_id, Item.user_id == current_user.id)).first()
     if item is None:
@@ -201,7 +203,7 @@ async def update(
 def delete(
     item_id: int,
     session: Session = Depends(get_session),
-    current_user: User = Depends(auth.get_current_user)
+    current_user: User = Depends(auth.get_current_user([PermissionType.ITEM_DELETE]))
 ):
     item = session.query(Item).filter(and_(Item.id == item_id, Item.user_id == current_user.id)).first()
     if item is None:

@@ -1,7 +1,8 @@
 # Note
 
 このドキュメントでは `bin` 配下のコマンド以外は `tutorial/chapter2/src` をルートディレクトリとして解説します。  
-chapter2では、まずMySQLを利用して基本的なデータベースの操作を学び、そのあとに、PythonからSQLAlchemyを利用してデータベースを操作する方法を学びます。
+chapter2では、最初にMySQLを利用して基本的なデータベースの操作を学びます。  
+そのあとに、PythonからSQLAlchemyを利用してデータベースを操作する方法を学びましょう。
 
 # ■ mysqlを起動しましょう
 
@@ -11,10 +12,10 @@ chapter2では、まずMySQLを利用して基本的なデータベースの操�
 
 # ■ SQLを実行してみましょう
 
-開発コンテナのshellを起動
+開発コンテナのshellを起動します。
 
 ```bash
-./bin/run.sh chapter2 --sample --mode shell
+./bin/run.sh chapter2 --mode shell
 ```
 
 MySQLにログイン
@@ -64,6 +65,15 @@ SHOW TABLES;
 
 -- テーブル定義を表示
 DESC users;
++-----------------+--------------+------+-----+-------------------+-----------------------------------------------+
+| Field           | Type         | Null | Key | Default           | Extra                                         |
++-----------------+--------------+------+-----+-------------------+-----------------------------------------------+
+| id              | int          | NO   | PRI | NULL              | auto_increment                                |
+| username        | varchar(255) | NO   | UNI | NULL              |                                               |
+| hashed_password | varchar(255) | NO   |     | NULL              |                                               |
+| created         | datetime     | NO   |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED                             |
+| updated         | datetime     | NO   |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED on update CURRENT_TIMESTAMP |
++-----------------+--------------+------+-----+-------------------+-----------------------------------------------+
 ```
 
 データの操作
@@ -393,10 +403,15 @@ DROP TABLE roles;
 DROP TABLE users;
 
 -- データベースを削除する
-DROP DATABASE chapter2
+DROP DATABASE chapter2;
 
 -- MySQLからログアウト
 exit;
+```
+
+```bash
+# 開発用shellからログアウト
+exit
 ```
 
 # ■ Pythonからデータベースを触ってみる (SQLAlchemy)
@@ -412,6 +427,9 @@ exit;
 # データベースを作成
 MYSQL_PWD=$DB_PASSWORD mysql -u $DB_USER -h $DB_HOST -P $DB_PORT -e "DROP DATABASE IF EXISTS chapter2"
 MYSQL_PWD=$DB_PASSWORD mysql -u $DB_USER -h $DB_HOST -P $DB_PORT -e "CREATE DATABASE IF NOT EXISTS chapter2"
+
+# 開発用shellからログアウト
+exit
 ```
 
 ## JupyterLab起動
@@ -419,5 +437,7 @@ MYSQL_PWD=$DB_PASSWORD mysql -u $DB_USER -h $DB_HOST -P $DB_PORT -e "CREATE DATA
 ```bash
 ./bin/run.sh chapter2 --mode jupyter
 ```
+
+jupyter起動時に表示されるURL( http://localhost:8889/lab?token=41e856b7be74ca12e156c8f711e2bf4dd6ff88ddb14cb629 )にブラウザでアクセスしてください。
 
 `tutorial/chapter2/sample/sqlalchemy_tutorial.ipynb` の実装を参考に、SQLAlchemyを利用してPythonからデータベースを操作してみましょう。

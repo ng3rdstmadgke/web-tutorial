@@ -1,4 +1,4 @@
-[Chapter2] RDB入門 ~ SQLAlchemyを利用したデータベースの操作
+[Chapter2] RDB入門
 --
 [top](../../README.md)
 
@@ -6,7 +6,6 @@
 
 このドキュメントでは `bin` 配下のコマンド以外は `tutorial/chapter2/src` をルートディレクトリとして解説します。  
 chapter2では、最初にMySQLを利用して基本的なデータベースの操作を学びます。  
-そのあとに、PythonからSQLAlchemyを利用してデータベースを操作する方法を学びましょう。
 
 # ■ mysqlを起動しましょう
 
@@ -417,31 +416,3 @@ exit;
 # 開発用shellからログアウト
 exit
 ```
-
-# ■ Pythonからデータベースを触ってみる (SQLAlchemy)
-
-[SQLAlchemy](https://www.sqlalchemy.org/)
-
-## データベースの作成
-
-```bash
-# 開発用shellを起動
-./bin/run.sh chapter2 --mode shell
-
-# データベースを作成
-MYSQL_PWD=$DB_PASSWORD mysql -u $DB_USER -h $DB_HOST -P $DB_PORT -e "DROP DATABASE IF EXISTS chapter2"
-MYSQL_PWD=$DB_PASSWORD mysql -u $DB_USER -h $DB_HOST -P $DB_PORT -e "CREATE DATABASE IF NOT EXISTS chapter2"
-
-# 開発用shellからログアウト
-exit
-```
-
-## JupyterLab起動
-
-```bash
-./bin/run.sh chapter2 --mode jupyter
-```
-
-jupyter起動時に表示されるURL( http://localhost:8889/lab?token=41e856b7be74ca12e156c8f711e2bf4dd6ff88ddb14cb629 )にブラウザでアクセスしてください。
-
-`tutorial/chapter2/sample/sqlalchemy_tutorial.ipynb` の実装を参考に、SQLAlchemyを利用してPythonからデータベースを操作してみましょう。

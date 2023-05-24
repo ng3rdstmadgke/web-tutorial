@@ -49,8 +49,8 @@ from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from jose import jwt, JWTError
-from db.db import get_session
-from db.model import User
+from session import get_session
+from model import User
 from env import Environment
 
 # ... 略 ...
@@ -122,14 +122,14 @@ from schemas import (
     UserResponseSchema,
     UserPostSchema,
     UserPutSchema,
-    ItemResponseSchema,
-    ItemPostSchema,
+    ItemResponseSchema,  # 追加
+    ItemPostSchema,  # 追加
 )
 
 # ... 略 ...
 
 @router.post("/items/", response_model=ItemResponseSchema)
-async def create(
+def create(
     # request form and files: https://fastapi.tiangolo.com/tutorial/request-forms-and-files/
     data: ItemPostSchema,
     session: Session = Depends(get_session),
@@ -189,21 +189,21 @@ class ItemPutSchema(BaseModel):
 
 # ... 略 ...
 
-from sqlalchemy import and_
+from sqlalchemy import and_  # 追加
 from schemas import (
     UserResponseSchema,
     UserPostSchema,
     UserPutSchema,
     ItemResponseSchema,
     ItemPostSchema,
-    ItemPutSchema,
+    ItemPutSchema,  # 追加
 )
 
 # ... 略 ...
 
 # アイテムの更新
 @router.put("/items/{item_id}", response_model=ItemResponseSchema)
-async def update(
+def update(
     item_id: int,
     data: ItemPostSchema,
     session: Session = Depends(get_session),
@@ -294,7 +294,6 @@ class PermissionType(enum.Enum):
     ITEM_UPDATE = "ITEM_UPDATE"
     ITEM_DELETE = "ITEM_DELETE"
 
-
 # 権限を扱うユーティリティクラス
 class PermissionService:
     # どのロールが何の権限を持っているのかをクラス変数で定義
@@ -312,7 +311,6 @@ class PermissionService:
         RoleType.LOCATION_OPERATOR: set([  # LOCATION_OPERATOR が保有する権限
             PermissionType.ITEM_CREATE,
         ])
-        
     }
 
     @classmethod
@@ -393,7 +391,7 @@ from permission_service import PermissionType
 
 # アイテムの新規作成
 @router.post("/items/", response_model=ItemResponseSchema)
-async def create(
+def create(
     data: ItemPostSchema,
     session: Session = Depends(get_session),
     # get_current_userの引数にこのAPIを実行するために必要な権限の配列を指定
@@ -414,7 +412,7 @@ def get_list(
 
 # アイテムの更新
 @router.put("/items/{item_id}", response_model=ItemResponseSchema)
-async def update(
+def update(
     item_id: int,
     data: ItemPostSchema,
     session: Session = Depends(get_session),

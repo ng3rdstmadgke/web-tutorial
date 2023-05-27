@@ -31,6 +31,7 @@ router = APIRouter()
 def create_user(
     data: UserPostSchema, 
     session: Session = Depends(get_session),
+    _: User = Depends(auth.get_current_user([PermissionType.USER_CREATE]))
 ):
     user = session.query(User).filter(User.username == data.username).first()
     if user:
@@ -61,6 +62,7 @@ def read_users(
     skip: int = 0,  # GETパラメータ
     limit: int = 100,  # GETパラメータ
     session: Session = Depends(get_session),
+    _: User = Depends(auth.get_current_user([PermissionType.USER_READ]))
 ):
     users = session.query(User).offset(skip).limit(limit).all()
     return users
@@ -70,6 +72,7 @@ def read_users(
 def read_user(
     user_id: int,
     session: Session = Depends(get_session),
+    _: User = Depends(auth.get_current_user([PermissionType.USER_READ]))
 ):
     user = session.query(User).filter(User.id == user_id).first()
     if user is None:
@@ -82,6 +85,7 @@ def update_user(
     user_id: int,
     data: UserPutSchema,
     session: Session = Depends(get_session),
+    _: User = Depends(auth.get_current_user([PermissionType.USER_UPDATE]))
 ):
     # ユーザーの存在チェック。更新対象のユーザーが存在しなければ404エラー
     user = session.query(User).filter(User.id == user_id).first()
@@ -110,6 +114,7 @@ def update_user(
 def delete_user(
     user_id: int,
     session: Session = Depends(get_session),
+    _: User = Depends(auth.get_current_user([PermissionType.USER_DELETE]))
 ):
     # ユーザーの存在チェック。更新対象のユーザーが存在しなければ404エラー
     user = session.query(User).filter(User.id == user_id).first()

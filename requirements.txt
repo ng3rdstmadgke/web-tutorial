@@ -5,3 +5,4 @@ alembic
 python-jose[cryptography]
 passlib[bcrypt]
 pytest
+click==8.1.3

@@ -267,15 +267,26 @@ http://127.0.0.1:8018/docs にブラウザでアクセスしてみましょう�
 今回は各ロールに下記の権限を許可してみましょう
 
 - SYSTEM_ADMIN
+  - ユーザー作成
+  - ユーザー閲覧
+  - ユーザー更新
+  - ユーザー削除
   - アイテム作成
   - アイテム閲覧
   - アイテム更新
   - アイテム削除
 - LOCATION_ADMIN
+  - ユーザー閲覧
+  - ユーザー更新
   - アイテム作成
+  - アイテム閲覧
+  - アイテム更新
   - アイテム削除
 - LOCATION_OPERATOR
   - アイテム作成
+  - アイテム閲覧
+  - アイテム更新
+  - アイテム削除
 
 権限の定義と、権限の有無を確認するユーティリティを実装します。
 
@@ -289,6 +300,10 @@ from functools import wraps
 
 # 権限の定義
 class PermissionType(enum.Enum):
+    USER_CREATE = "USER_CREATE"
+    USER_READ   = "USER_READ"
+    USER_UPDATE = "USER_UPDATE"
+    USER_DELETE = "USER_DELETE"
     ITEM_CREATE = "ITEM_CREATE"
     ITEM_READ   = "ITEM_READ"
     ITEM_UPDATE = "ITEM_UPDATE"
@@ -299,17 +314,28 @@ class PermissionService:
     # どのロールが何の権限を持っているのかをクラス変数で定義
     __role_definition: Dict[RoleType, Set[PermissionType]] = {
         RoleType.SYSTEM_ADMIN: set([  # SYSTEM_ADMIN が保有する権限
+            PermissionType.USER_CREATE,
+            PermissionType.USER_READ,
+            PermissionType.USER_UPDATE,
+            PermissionType.USER_DELETE,
             PermissionType.ITEM_CREATE,
             PermissionType.ITEM_READ,
             PermissionType.ITEM_UPDATE,
             PermissionType.ITEM_DELETE,
         ]),
         RoleType.LOCATION_ADMIN: set([  # LOCATION_ADMIN が保有する権限
+            PermissionType.USER_READ,
+            PermissionType.USER_UPDATE,
             PermissionType.ITEM_CREATE,
+            PermissionType.ITEM_READ,
+            PermissionType.ITEM_UPDATE,
             PermissionType.ITEM_DELETE,
         ]),
         RoleType.LOCATION_OPERATOR: set([  # LOCATION_OPERATOR が保有する権限
             PermissionType.ITEM_CREATE,
+            PermissionType.ITEM_READ,
+            PermissionType.ITEM_UPDATE,
+            PermissionType.ITEM_DELETE,
         ])
     }
 
@@ -389,6 +415,54 @@ def get_current_user(permissions: List[PermissionType] = []) -> Callable:
 # ... 略 ...
 from permission_service import PermissionType
 
+# ユーザー作成
+@router.post("/users/", response_model=UserResponseSchema)
+def create_user(
+    data: UserPostSchema, 
+    session: Session = Depends(get_session),
+    _: User = Depends(auth.get_current_user([PermissionType.USER_CREATE]))  # 追加
+):
+    # ... 略 ...
+
+# ユーザー一覧
+@router.get("/users/", response_model=List[UserResponseSchema])
+def read_users(
+    skip: int = 0,  # GETパラメータ
+    limit: int = 100,  # GETパラメータ
+    session: Session = Depends(get_session),
+    _: User = Depends(auth.get_current_user([PermissionType.USER_READ]))  # 追加
+):
+    # ... 略 ...
+
+# ユーザー取得
+@router.get("/users/{user_id}", response_model=UserResponseSchema)
+def read_user(
+    user_id: int,
+    session: Session = Depends(get_session),
+    _: User = Depends(auth.get_current_user([PermissionType.USER_READ]))  # 追加
+):
+    # ... 略 ...
+
+# ユーザー更新
+@router.put("/users/{user_id}", response_model=UserResponseSchema)
+def update_user(
+    user_id: int,
+    data: UserPutSchema,
+    session: Session = Depends(get_session),
+    _: User = Depends(auth.get_current_user([PermissionType.USER_UPDATE]))  # 追加
+):
+    # ... 略 ...
+
+# ユーザー削除
+@router.delete("/users/{user_id}")
+def delete_user(
+    user_id: int,
+    session: Session = Depends(get_session),
+    _: User = Depends(auth.get_current_user([PermissionType.USER_DELETE]))  # 追加
+):
+    # ... 略 ...
+
+
 # アイテムの新規作成
 @router.post("/items/", response_model=ItemResponseSchema)
 def create(
@@ -430,8 +504,102 @@ def delete(
     # ... 略 ...
 ```
 
-## ブラウザで確認してみましょう
+## ユーザーを作成・削除するコマンドラインツールを作成しましょう。
 
+APIに認証・認可を実装したことで、まっさらの状態からユーザーを新規登録することができなくなってしまいました。  
+運用や動作確認で利用するユーザー作成・削除コマンドラインツールを作成してみましょう。  
+
+今回は、 [click](https://click.palletsprojects.com/en/8.1.x/)というコマンドラインパーサーライブラリを利用してコマンドラインツールを実装してみましょう。
+
+
+```python
+# -- manage.py --
+
+import click
+
+from model import User, Role, RoleType
+from session import SessionLocal
+import auth
+
+
+@click.group()
+def cli():
+    pass
+
+@cli.command()
+@click.argument("user_name", type=str)
+@click.option("-r", "--role", required=True, type=click.Choice([e.name for e in RoleType]))
+@click.option("-p", "--password", type=str, prompt=True, confirmation_prompt=True)  # --passwordが指定されていない場合はプロンプトで入力
+@click.option("-a", "--age", default=0, type=int)
+def create_user(user_name, age, role, password):  # 関数名がサブコマンドになる。この場合create-user
+    """ユーザー作成"""
+    with SessionLocal() as session:
+        # userの重複確認
+        user = session.query(User).filter(User.username == user_name).first()
+        if user:
+            raise Exception(f"{user_name} is already exists.")
+
+        # roleの存在確認
+        role = session.query(Role).filter(Role.name == role).first()
+        if role is None:
+            raise Exception(f"{role} Role is not found.")
+
+        user = User(
+            username=user_name,
+            hashed_password=auth.hash(password),
+            age=age,
+            roles=[role],
+        )
+        session.add(user)
+        session.commit()
+        session.refresh(user)
+        return user
+
+@cli.command()
+@click.argument("user_name", type=str)
+def delete_user(user_name):  # サブコマンドはdelete-user
+    """ユーザー削除"""
+    with SessionLocal() as session:
+        # userの重複確認
+        user = session.query(User).filter(User.username == user_name).first()
+        if user is None:
+            raise Exception(f"{user_name} is already exists.")
+        session.delete(user)
+        session.commit()
+
+if __name__ == "__main__":
+    cli()
+
+```
+
+
+コマンドラインツールを実行してみましょう。
+
+```bash
+# 開発用shellの起動
+./bin/run.sh chapter5 --mode shell
+```
+
+以下開発用shell内での操作
+
+```bash
+# ヘルプを表示してみましょう
+python manage.py --help
+
+# コマンドごとのヘルプを閲覧することも可能です。
+python manage.py create-user --help
+python manage.py delete-user --help
+
+# それぞれの権限を持つユーザーを作成
+python manage.py create-user sys_admin -r SYSTEM_ADMIN
+python manage.py create-user loc_admin -r LOCATION_ADMIN
+python manage.py create-user loc_operator -r LOCATION_OPERATOR
+
+# ユーザーの削除 (参考)
+python manage.py delete-user xxxxxxx
+```
+
+## ブラウザで確認してみましょう
 
 ```bash
 # アプリを起動

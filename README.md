@@ -10,3 +10,4 @@
 - [Chapter3 Alembicを利用したマイグレーションを実装してみよう](tutorial/chapter3/README.md)
 - [Chapter4 FastAPIでCRUDを実装してみよう](tutorial/chapter4/README.md)
 - [Chapter5 認証・認可が必要なAPIを実装してみよう](tutorial/chapter5/README.md)
+- [Chapter6 APIテストを実装してみよう](tutorial/chapter6/README.md)

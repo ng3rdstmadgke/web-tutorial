@@ -329,7 +329,7 @@ exit
 テストのためにいちいち複数のコマンドを実行するのは手間なので、スクリプト化してしまいましょう。
 
 ```bash
-# --- bin/test.sh --- 
+# --- bin/test.sh ---
 #!/bin/bash
 
 set -e
@@ -402,7 +402,7 @@ python manage.py create-user loc_operator -r LOCATION_OPERATOR -p $PASSWD
 ./bin/run.sh chapter6 --mode shell
 
 # 実行権限を付与
-chmod 755./bin/init-database.sh 
+chmod 755./bin/init-database.sh
 
 # DBの初期化を実行
 ./bin/init-database.sh

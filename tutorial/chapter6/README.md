@@ -7,7 +7,6 @@
 
 chapter6では、これまでに実装したAPIのテストを実装していきましょう。
 
-
 # ■ テストの実装
 
 ## テストの前後処理を実装しましょう
@@ -319,4 +318,94 @@ MYSQL_PWD=$DB_PASSWORD mysql -u $DB_USER -h $DB_HOST -P $DB_PORT -e "CREATE DATA
 
 # テストを実行
 pytest tests
+
+exit
+```
+
+# ■ スクリプトの作成
+
+## テストスクリプト
+
+テストのためにいちいち複数のコマンドを実行するのは手間なので、スクリプト化してしまいましょう。
+
+```bash
+# --- bin/test.sh --- 
+#!/bin/bash
+
+set -e
+
+# データベースを削除
+MYSQL_PWD=$DB_PASSWORD mysql -u $DB_USER -h $DB_HOST -P $DB_PORT -e "DROP DATABASE IF EXISTS test"
+
+# データベースを作成
+MYSQL_PWD=$DB_PASSWORD mysql -u $DB_USER -h $DB_HOST -P $DB_PORT -e "CREATE DATABASE IF NOT EXISTS test"
+
+# テストを実行
+pytest tests
+```
+
+テストスクリプトを実行してみましょう
+
+```bash
+# 開発用shellを起動
+./bin/run.sh chapter6 --mode shell
+
+# 実行権限を付与
+chmod 755 ./bin/test.sh
+
+# テストの実行
+./bin/test.sh
+
+exit
+```
+
+## DBの初期化スクリプト
+
+毎回DBとテーブルを作成して、テスト用のユーザーを作成するのも手間なので、これらもスクリプト化してしまいましょう。
+
+```bash
+# --- bin/init-database.sh --
+#!/bin/bash
+
+# set -e : コマンドのreturn_codeが0以外だったら終了
+# set -x : デバッグログを表示
+set -ex
+
+# このスクリプトの絶対パス
+SCRIPT_DIR=$(cd $(dirname $0); pwd)
+
+# プロジェクトルートの絶対パス
+ROOT_DIR=$(cd $(dirname $0)/..; pwd)
+
+cd $ROOT_DIR
+
+# データベースを削除
+MYSQL_PWD=$DB_PASSWORD mysql -u $DB_USER -h $DB_HOST -P $DB_PORT -e "DROP DATABASE IF EXISTS $DB_NAME"
+
+# データベースを作成
+MYSQL_PWD=$DB_PASSWORD mysql -u $DB_USER -h $DB_HOST -P $DB_PORT -e "CREATE DATABASE IF NOT EXISTS $DB_NAME"
+
+# マイグレーション
+alembic upgrade head
+
+# 初期ユーザー作成
+PASSWD="admin"
+python manage.py create-user sys_admin -r SYSTEM_ADMIN -p $PASSWD
+python manage.py create-user loc_admin -r LOCATION_ADMIN -p $PASSWD
+python manage.py create-user loc_operator -r LOCATION_OPERATOR -p $PASSWD
+```
+
+スクリプトを実行してみましょう
+
+```bash
+# 開発用shellを起動
+./bin/run.sh chapter6 --mode shell
+
+# 実行権限を付与
+chmod 755./bin/init-database.sh 
+
+# DBの初期化を実行
+./bin/init-database.sh
+
+exit
 ```

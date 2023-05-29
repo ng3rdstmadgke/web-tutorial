@@ -100,6 +100,7 @@ docker run \
   -ti \
   --network host \
   --env-file "$ENV_PATH" \
+  -e "DB_NAME=$(echo $CHAPTER | sed -e 's/[^a-zA-Z0-9]/_/g')" \
   --user="$(id -u):$(id -g)" \
   -w /opt/app \
   -v ${LOCAL_APP_DIR}:/opt/app \

@@ -308,7 +308,7 @@ MySQLを起動し、開発用shellを起動します。
 ./bin/mysql.sh
 
 # 開発用shellを起動
-./bin/run.sh chapter6 --mode shell
+./bin/run.sh chapter6 --mode shell 
 ```
 
 ※ 以下、開発用shell内での操作

@@ -68,15 +68,15 @@ fi
 export $(cat $ENV_PATH | grep -v -e "^ *#")
 
 # Docker build
+export DOCKER_BUILDKIT=1
 docker build \
   --build-arg http_proxy=$https_proxy \
   --build-arg https_proxy=$https_proxy \
   --build-arg no_proxy=$NO_PROXY \
   --build-arg host_uid=$(id -u) \
   --build-arg host_gid=$(id -g) \
-  -q \
   --rm \
-  -f docker/fastapi/Dockerfile \
+  -f docker/app/Dockerfile \
   -t fastapi-tutorial:latest \
   .
 
@@ -91,8 +91,8 @@ if [ "$MODE" = "shell" ]; then
   CMD="/bin/bash"
 elif [ "$MODE" = "jupyter" ]; then
   CMD="jupyter lab --ip=* --no-browser --notebook-dir /opt/app/"
-else 
-  CMD="/entrypoint.sh"
+else
+  CMD="supervisord -c /etc/supervisor/supervisord.conf"
 fi
 echo $CMD
 docker run \

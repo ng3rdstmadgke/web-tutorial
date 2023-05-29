@@ -1,75 +1,7 @@
-[Chapter6] APIテストを実装してみよう
---
-[top](../../README.md)
-
-# Note
-このドキュメントでは `bin` 配下のコマンド以外は `tutorial/chapter6/src` をルートディレクトリとして解説します。
-
-chapter6では、これまでに実装したAPIのテストを実装していきましょう。
-
-
-# ■ テストの実装
-
-## テストの前後処理を実装しましょう
-
-APIテストを行うには、テスト用のDBにアクセスするためのセッションや、初期ユーザーなどが必要です。  
-Pytestでは `fixture` を利用することで、テスト関数の前後で行われる処理を定義することができます。  
-
-
-まずは、テスト用のユーザーを作成するための関数を定義しましょう。  
-※ ユーザー作成APIは認証・認可が必要なので、初期ユーザーの登録は直接DBに登録する形で行います。
-
-```python
-# -- tests/lib.py --
-
-from session import get_session
-from sqlalchemy.orm import Session
-from fastapi.testclient import TestClient
-
-from model import User, Role, RoleType
-import auth
-
-def create_user(session: Session, username: str, password: str, role_type: RoleType) -> User:
-    # userの重複確認
-    user = session.query(User).filter(User.username == username).first()
-    if user:
-        raise Exception(f"{username} is already exists.")
-
-    # roleの存在確認
-    role = session.query(Role).filter(Role.name == role_type.value).first()
-    if role is None:
-        raise Exception(f"{role_type.value} is not exists.")
-
-    user = User(
-        username=username,
-        hashed_password=auth.hash(password),
-        age=20,
-        roles=[role],
-    )
-    session.add(user)
-    session.commit()
-    session.refresh(user)
-    return user
-```
-
-`fixture` を実装してみましょう。 `fixture` で行う処理は下記の通りです
-
-- 前処理
-    1. DBとのセッションを作るセッションファクトリーの定義
-    1. テスト用のテーブルを作成
-    1. `session.get_session` をオーバーライドして、向き先をテスト用のDBに変更
-    1. テスト用のユーザーとロールを作成
-    1. テスト用のHTTPクライアントを作成
-- 後処理
-    1. HTTPクライアントのクローズ
-
-
-
-```python
-# -- tests/test_main.py --
 import sys
 import pprint
-sys.path.append("/opt/app")  # 上の階層のファイルをimportするために PYTHON_PATH に追加
+pprint.pprint(sys.path)
+sys.path.append("/opt/app")
 
 import pytest
 from fastapi.testclient import TestClient
@@ -122,53 +54,13 @@ def client() -> TestClient:
 
     # テスト関数実行後の後処理
     client.close()
-```
-
-
-## テストを実装しましょう
-
-作成したAPIには認証・認可が必要なので、トークンを取得する関数を実装しましょう。  
-
-
-```python
-# -- tests/lib.py --
-
-# ... 略 ...
-
-def fetch_token(client: TestClient, username: str, password: str) -> str:
-    response = client.post(
-        "/api/v1/token",
-        data={"username": username, "password": password}
-    )
-    if response.status_code != 200:
-        raise Exception(f"{response.status_code}: {response.content}")
-    return response.json()["access_token"]
-
-```
-
-ユーザー作成APIのテストを実装してみましょう。ここでは2パターンのテストを実装してみます。  
-
-1. `RoleType.SYSTEM_ADMIN` ロールを持つユーザーによるユーザー作成  
-ユーザー作成に成功する
-1. `RoleType.LOCATION_OPERATOR` ロールを持つユーザーによるユーザー作成  
-権限エラーでユーザー作成に失敗する
-
-
-
-```python
-# -- tests/test_main.py --
-
-# ... 略 ...
 
 
 def test_user_create_sys_admin(client):
     """
     RoleType.SYSTEM_ADMINロールを持つユーザーはユーザーを作成できます
     """
-    # トークンの取得
     token = fetch_token(client, "sys_admin", "password")
-
-    # APIへのリクエスト
     response = client.post(
         "/api/v1/users/",
         headers={"Authorization": f"Bearer {token}"},
@@ -179,9 +71,7 @@ def test_user_create_sys_admin(client):
             "role_ids": [1, 2],
         }
     )
-    # レスポンスコードのチェック
-    # response.json() でレスポンスの内容を取得することもできます。
-    assert response.status_code == 200  # 成功
+    assert response.status_code == 200
 
 def test_user_create_loc_operator(client):
     """
@@ -198,15 +88,7 @@ def test_user_create_loc_operator(client):
             "role_ids": [1, 2],
         }
     )
-    assert response.status_code == 403  # 失敗 (403 Forbidden)
-```
-
-残りのテストを実装しましょう。
-
-```python
-# -- tests/test_main.py --
-
-# ... 略 ...
+    assert response.status_code == 403
 
 def test_user_get(client):
     token = fetch_token(client, "sys_admin", "password")
@@ -297,26 +179,3 @@ def test_item_delete(client):
         headers={"Authorization": f"Bearer {token}"},
     )
     assert response.status_code == 200
-```
-
-
-# ■ テストの実行
-
-MySQLを起動し、開発用shellを起動します。
-```bash
-# MySQL起動
-./bin/mysql.sh
-
-# 開発用shellを起動
-./bin/run.sh chapter6 --mode shell
-```
-
-※ 以下、開発用shell内での操作
-
-```bash
-# データベースを作成
-MYSQL_PWD=$DB_PASSWORD mysql -u $DB_USER -h $DB_HOST -P $DB_PORT -e "CREATE DATABASE IF NOT EXISTS test"
-
-# テストを実行
-pytest tests
-```

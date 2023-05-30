@@ -11,3 +11,11 @@
 - [Chapter4 FastAPIでCRUDを実装してみよう](tutorial/chapter4/README.md)
 - [Chapter5 認証・認可が必要なAPIを実装してみよう](tutorial/chapter5/README.md)
 - [Chapter6 APIテストを実装してみよう](tutorial/chapter6/README.md)
+- [Chapter7 番外編1: JavaScriptのおさらい](tutorial/chapter7/README.md)
+
+
+# TODO
+
+- chapter7
+  - Promise
+  - formの扱い

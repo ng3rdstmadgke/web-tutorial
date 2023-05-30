@@ -1,4 +1,4 @@
-[Chapter7] 番外編1: JavaScriptに触れてみよう。
+[Chapter7] 番外編1: JavaScriptのおさらい
 --
 [top](../../README.md)
 

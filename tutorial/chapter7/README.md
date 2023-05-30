@@ -51,7 +51,30 @@ app.include_router(router, prefix="/api/v1")
 app.mount("/", StaticFiles(directory=f"/opt/app/static", html=True), name="static")  # 追加
 ```
 
+CORS(クロスオリジンリソース共有)を許可しましょう。  
+※ 通常、XMLHttpRequestやFetchAPIは異なるオリジンに対してのアクセスをブラウザ側で制限されています。その制限を取り払います。  
+参考: [オリジン間リソース共有 (CORS) | MDN](https://developer.mozilla.org/ja/docs/Web/HTTP/CORS)
+
+```python
+# --- main.py ---
+# ... 略 ...
+from fastapi.middleware.cors import CORSMiddleware  # 追加
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],     # クロスオリジンリクエストを許可するオリジンのリスト。 "*" はすべて許可。
+    allow_credentials=True,  # Cookieがクロスオリジンリクエストに対してサポートされるべきかどうか。
+    allow_methods=["*"],     # クロスオリジンリクエストで許可されるHTTPメソッドのリスト。 "*" はすべて許可。
+    allow_headers=["*"],     # クロスオリジンリクエストで許可されるHTTPヘッダのリスト。 "*" はすべて許可。
+)
+
+# ... 略 ...
+```
+
 htmlを作成します。
+アクセスアクセス
 
 ```html
 <!-- static/index.html -->
@@ -68,6 +91,7 @@ htmlを作成します。
 </body>
 </html>
 ```
+
 
 ブラウザからアクセスしてみましょう
 http://localhost:8018/

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+
+<!-- リクエスト結果の表示エリア ここから -->
+<div id="js_result">
+</div>
+<!-- リクエスト結果の表示エリア ここまで -->
+
+<div>
+  <ul>
+    <li><a href="/login.html">ログイン</a></li>
+  </ul>
+</div>
+
+<script>
+/**
+ * 指定されたキーをCookieから取得する
+ */
+function getCookie(key) {
+  let obj = Object.fromEntries(
+    document.cookie
+      .split(";")
+      .map((e) => {
+        return e.trim()
+          .split("=")
+          .map((k) => {
+            return decodeURIComponent(k);
+          });
+      })
+  );
+  return obj[key];
+}
+
+/**
+ * li要素を作成する
+ */
+function createUserListElem(user) {
+  let li = document.createElement("li")
+  li.setAttribute("id", user.id)
+  let roles = user.roles.map((r) => r.name).join(" ")
+  li.textContent = `${user.username} (role=${roles})`
+  return li
+}
+
+// ページの読み込みが完了したら発火
+document.addEventListener("DOMContentLoaded", function() {
+  let result = document.getElementById("js_result");
+
+  let xhr = new XMLHttpRequest();
+  xhr.open("GET", "/api/v1/users/");
+  xhr.setRequestHeader("Authorization", `Bearer ${getCookie("token")}`);
+
+  // リクエストを送信した直後の処理
+  xhr.addEventListener("loadstart", function(event) {
+    result.innerHTML = '';
+    result.textContent = "通信中...";
+  }, false);
+
+  // レスポンスが帰ってきたときの処理
+  xhr.addEventListener('load', (event) => {
+    if (xhr.status !== 200) {
+      result.textContent = `ユーザー一覧取得失敗 (${xhr.responseText})`
+      return
+    }
+    // 取得したユーザー一覧でli要素を作成して、ul要素に追加
+    result.innerHTML = '';
+    for (let user of JSON.parse(xhr.responseText)) {
+      let li = createUserListElem(user);
+      result.appendChild(li);
+    }
+  });
+
+  // エラー発生時の処理
+  xhr.addEventListener('error', (event) => {
+    result.innerHTML = '';
+    result.textContent = "エラー"
+    console.log(event);
+  });
+
+  // リクエストを送信
+  xhr.send();
+    
+})
+</script>
+</body>
+</html>

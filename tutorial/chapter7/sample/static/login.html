@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+<form id="js_form">
+  <div>
+    <label ref="js_username">username</label>
+    <input id="js_username" name="username" type="text" value="">
+  </div>
+  <div>
+    <label ref="js_password">password</label>
+    <input id="js_password" name="password" type="password" value="">
+  </div>
+  <div>
+    <input type="submit" value="送信">
+  </div>
+</form>
+<div id="js_result"></div>
+<div>
+  <ul>
+    <li><a href="/users.html">ユーザー一覧</a></li>
+  </ul>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  document.getElementById("js_form").addEventListener("submit", function(event){
+    let result = document.getElementById("js_result");
+
+    // デフォルトの挙動をキャンセル
+    event.preventDefault();
+
+    let xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/v1/token");
+
+    // リクエストを送信した直後の処理
+    xhr.addEventListener("loadstart", function(event) {
+      result.textContent = "通信中...";
+    }, false);
+
+    // レスポンスが帰ってきたときの処理
+    xhr.addEventListener('load', (event) => {
+      if (xhr.status !== 200) {
+        result.textContent = `ログイン失敗 (${xhr.responseText})`
+        return
+      }
+      let response = JSON.parse(xhr.responseText);
+      let token = response.access_token;
+      document.cookie = "token=" + encodeURIComponent(token);
+      result.textContent = `ログイン成功 (token=${token})`
+    });
+
+    // エラー発生時の処理
+    xhr.addEventListener('error', (event) => {
+      result.textContent = "エラー"
+      console.log(event);
+    });
+
+    // form要素をリクエストボディに設定してリクエストを送信
+    let form = event.currentTarget;
+    let formData = new FormData(form)
+    xhr.send(formData);
+  });
+})
+</script>
+</body>
+</html>

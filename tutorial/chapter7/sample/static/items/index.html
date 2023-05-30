@@ -4,48 +4,32 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="/util.js"></script>
   <title>Document</title>
+
 </head>
 <body>
+
+<div>
+  <ul>
+    <li><a href="/login.html">TOP</a></li>
+    <li><a href="/items/create.html">アイテム登録</a></li>
+  </ul>
+</div>
 
 <!-- リクエスト結果の表示エリア ここから -->
 <div id="js_result">
 </div>
 <!-- リクエスト結果の表示エリア ここまで -->
 
-<div>
-  <ul>
-    <li><a href="/login.html">ログイン</a></li>
-  </ul>
-</div>
-
 <script>
-/**
- * 指定されたキーをCookieから取得する
- */
-function getCookie(key) {
-  let obj = Object.fromEntries(
-    document.cookie
-      .split(";")
-      .map((e) => {
-        return e.trim()
-          .split("=")
-          .map((k) => {
-            return decodeURIComponent(k);
-          });
-      })
-  );
-  return obj[key];
-}
-
 /**
  * li要素を作成する
  */
-function createUserListElem(user) {
+function createListElem(item) {
   let li = document.createElement("li")
-  li.setAttribute("id", user.id)
-  let roles = user.roles.map((r) => r.name).join(" ")
-  li.textContent = `${user.username} (role=${roles})`
+  li.setAttribute("id", item.id)
+  li.textContent = `title=${item.title} content=${item.content}`;
   return li
 }
 
@@ -54,8 +38,8 @@ document.addEventListener("DOMContentLoaded", function() {
   let result = document.getElementById("js_result");
 
   let xhr = new XMLHttpRequest();
-  xhr.open("GET", "/api/v1/users/");
-  xhr.setRequestHeader("Authorization", `Bearer ${getCookie("token")}`);
+  xhr.open("GET", "/api/v1/items/");
+  xhr.setRequestHeader("Authorization", `Bearer ${CookieUtil.getCookie("token")}`);
 
   // リクエストを送信した直後の処理
   xhr.addEventListener("loadstart", function(event) {
@@ -71,8 +55,8 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     // 取得したユーザー一覧でli要素を作成して、ul要素に追加
     result.innerHTML = '';
-    for (let user of JSON.parse(xhr.responseText)) {
-      let li = createUserListElem(user);
+    for (let item of JSON.parse(xhr.responseText)) {
+      let li = createListElem(item);
       result.appendChild(li);
     }
   });
@@ -86,7 +70,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
   // リクエストを送信
   xhr.send();
-    
 })
 </script>
 </body>

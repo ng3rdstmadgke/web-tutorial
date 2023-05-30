@@ -975,6 +975,7 @@ http://example.com:8080/js/sample.html#gihyo?id=12345
 | hash | アンカー名 | #gihyo?id=12345 |
 | host | ホスト | example.com:8080 |
 | hostName | ホスト名 | example.com |
+| origin | オリジン | http://example.com:8080 |
 | href | リンク先 | http://example.com:8080/js/sample.html#gihyo?id=12345 |
 | pathname | パス名 | js/sample.html |
 | port | ポート | 8080 |
@@ -1074,6 +1075,34 @@ xhr.send(JSON.stringify(body));
 
 ## ログインとユーザー一覧を表示するWebページを実装してみましょう
 
+Cookieを登録・取得できるユーティリティーを実装しましょう。
+
+```js
+// --- static/util.js ---
+window.CookieUtil = {
+  getCookie: function(key) {
+    let obj = Object.fromEntries(
+      document.cookie
+        .split(";")
+        .map((e) => {
+          return e.trim()
+            .split("=")
+            .map((k) => {
+              return decodeURIComponent(k);
+            });
+        })
+    );
+    return obj[key];
+  },
+  setCookie: function(key, value) {
+    document.cookie = encodeURIComponent(key) + "=" + encodeURIComponent(value);
+  }
+}
+```
+
+
+ログイン画面の実装
+
 ```html
 <!-- static/login.html -->
 <!DOCTYPE html>
@@ -1082,41 +1111,43 @@ xhr.send(JSON.stringify(body));
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="/util.js"></script>
   <title>Document</title>
 </head>
 <body>
-<!-- ログインフォーム ここから-->
+<div>
+  <ul>
+    <li><a href="/items/index.html">アイテム一覧</a></li>
+  </ul>
+</div>
+
 <form id="js_form">
   <div>
     <label ref="js_username">username</label>
-    <input id="js_username" name="username" type="text" value="">
+    <input id="js_username" name="username" type="text" value="" required>
   </div>
   <div>
     <label ref="js_password">password</label>
-    <input id="js_password" name="password" type="password" value="">
+    <input id="js_password" name="password" type="password" value="" required>
   </div>
   <div>
     <input type="submit" value="送信">
   </div>
 </form>
-<!-- ログインフォーム ここまで-->
 
 <!-- リクエスト結果の表示エリア ここから -->
-<div id="js_result"></div>
+<div id="js_result">
+</div>
 <!-- リクエスト結果の表示エリア ここまで -->
 
-<div>
-  <ul>
-    <li><a href="/users.html">ユーザー一覧</a></li>
-  </ul>
-</div>
-
 <script>
-// ページの読み込みが完了したら発火
 document.addEventListener("DOMContentLoaded", function() {
-  // formがsubmitされたら発火
   document.getElementById("js_form").addEventListener("submit", function(event){
     let result = document.getElementById("js_result");
+    let form = event.currentTarget;
+    if (!form.reportValidity()) {
+      return
+    }
 
     // デフォルトの挙動をキャンセル
     event.preventDefault();
@@ -1137,7 +1168,7 @@ document.addEventListener("DOMContentLoaded", function() {
       }
       let response = JSON.parse(xhr.responseText);
       let token = response.access_token;
-      document.cookie = "token=" + encodeURIComponent(token);
+      CookieUtil.setCookie("token", token)
       result.textContent = `ログイン成功 (token=${token})`
     });
 
@@ -1148,7 +1179,6 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     // form要素をリクエストボディに設定してリクエストを送信
-    let form = event.currentTarget;
     let formData = new FormData(form)
     xhr.send(formData);
   });
@@ -1158,56 +1188,42 @@ document.addEventListener("DOMContentLoaded", function() {
 </html>
 ```
 
+アイテム一覧画面の実装します。
+
 ```html
-<!-- static/users.html -->
+<!-- static/items/index.html -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="/util.js"></script>
   <title>Document</title>
+
 </head>
 <body>
+
+<div>
+  <ul>
+    <li><a href="/login.html">TOP</a></li>
+    <li><a href="/items/create.html">アイテム登録</a></li>
+  </ul>
+</div>
 
 <!-- リクエスト結果の表示エリア ここから -->
 <div id="js_result">
 </div>
 <!-- リクエスト結果の表示エリア ここまで -->
 
-<div>
-  <ul>
-    <li><a href="/login.html">ログイン</a></li>
-  </ul>
-</div>
-
 <script>
-/**
- * 指定されたキーをCookieから取得する
- */
-function getCookie(key) {
-  let obj = Object.fromEntries(
-    document.cookie
-      .split(";")
-      .map((e) => {
-        return e.trim()
-          .split("=")
-          .map((k) => {
-            return decodeURIComponent(k);
-          });
-      })
-  );
-  return obj[key];
-}
-
 /**
  * li要素を作成する
  */
-function createUserListElem(user) {
+function createListElem(item) {
   let li = document.createElement("li")
-  li.setAttribute("id", user.id)
-  let roles = user.roles.map((r) => r.name).join(" ")
-  li.textContent = `${user.username} (role=${roles})`
+  li.setAttribute("id", item.id)
+  li.textContent = `title=${item.title} content=${item.content}`;
   return li
 }
 
@@ -1216,8 +1232,8 @@ document.addEventListener("DOMContentLoaded", function() {
   let result = document.getElementById("js_result");
 
   let xhr = new XMLHttpRequest();
-  xhr.open("GET", "/api/v1/users/");
-  xhr.setRequestHeader("Authorization", `Bearer ${getCookie("token")}`);
+  xhr.open("GET", "/api/v1/items/");
+  xhr.setRequestHeader("Authorization", `Bearer ${CookieUtil.getCookie("token")}`);
 
   // リクエストを送信した直後の処理
   xhr.addEventListener("loadstart", function(event) {
@@ -1233,8 +1249,8 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     // 取得したユーザー一覧でli要素を作成して、ul要素に追加
     result.innerHTML = '';
-    for (let user of JSON.parse(xhr.responseText)) {
-      let li = createUserListElem(user);
+    for (let item of JSON.parse(xhr.responseText)) {
+      let li = createListElem(item);
       result.appendChild(li);
     }
   });
@@ -1248,11 +1264,105 @@ document.addEventListener("DOMContentLoaded", function() {
 
   // リクエストを送信
   xhr.send();
-    
+})
+</script>
+</body>
+</html>
+
+```
+
+アイテムを登録する画面を実装します。
+
+```html
+<!-- static/items/create.html -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="/util.js"></script>
+  <title>Document</title>
+
+</head>
+<body>
+
+<div>
+  <ul>
+    <li><a href="/login.html">TOP</a></li>
+    <li><a href="/items/index.html">アイテム一覧</a></li>
+  </ul>
+</div>
+
+<form id="js_form">
+  <div>
+    <label ref="js_title">title</label>
+    <input id="js_title" name="title" type="text" value="" required>
+  </div>
+  <div>
+    <label ref="js_content">content</label>
+    <input id="js_content" name="content" type="text" value="" required>
+  </div>
+  <div>
+    <input type="submit" value="登録">
+  </div>
+</form>
+
+<!-- リクエスト結果の表示エリア ここから -->
+<div id="js_result">
+</div>
+<!-- リクエスト結果の表示エリア ここまで -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  document.getElementById("js_form").addEventListener("submit", function(event){
+    let result = document.getElementById("js_result");
+    let form = event.currentTarget;
+    if (!form.reportValidity()) {
+      return
+    }
+
+    // デフォルトの挙動をキャンセル
+    event.preventDefault();
+
+    let xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/v1/items/");
+    xhr.setRequestHeader("Content-Type", "application/json")
+    xhr.setRequestHeader("Authorization", `Bearer ${CookieUtil.getCookie("token")}`);
+
+    // リクエストを送信した直後の処理
+    xhr.addEventListener("loadstart", function(event) {
+      result.textContent = "通信中...";
+    }, false);
+
+    // レスポンスが帰ってきたときの処理
+    xhr.addEventListener('load', (event) => {
+      if (xhr.status !== 200) {
+        result.textContent = `アイテム登録失敗 (${xhr.responseText})`
+        return
+      }
+      // アイテム一覧画面に遷移
+      location.href = location.origin + "/items/"
+    });
+
+    // エラー発生時の処理
+    xhr.addEventListener('error', (event) => {
+      result.textContent = "エラー"
+      console.log(event);
+    });
+
+    // form要素をリクエストボディに設定してリクエストを送信
+
+    let body = {
+      "title": document.getElementById("js_title").value,
+      "content": document.getElementById("js_content").value,
+    };
+    xhr.send(JSON.stringify(body));
+  });
 })
 </script>
 </body>
 </html>
 ```
+
 
 http://localhost:8018/login.html にアクセスしてみましょう。

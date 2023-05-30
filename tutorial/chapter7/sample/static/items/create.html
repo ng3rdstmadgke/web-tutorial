@@ -6,25 +6,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="/util.js"></script>
   <title>Document</title>
+
 </head>
 <body>
+
 <div>
   <ul>
+    <li><a href="/login.html">TOP</a></li>
     <li><a href="/items/index.html">アイテム一覧</a></li>
   </ul>
 </div>
 
 <form id="js_form">
   <div>
-    <label ref="js_username">username</label>
-    <input id="js_username" name="username" type="text" value="" required>
+    <label ref="js_title">title</label>
+    <input id="js_title" name="title" type="text" value="" required>
   </div>
   <div>
-    <label ref="js_password">password</label>
-    <input id="js_password" name="password" type="password" value="" required>
+    <label ref="js_content">content</label>
+    <input id="js_content" name="content" type="text" value="" required>
   </div>
   <div>
-    <input type="submit" value="送信">
+    <input type="submit" value="登録">
   </div>
 </form>
 
@@ -32,7 +35,6 @@
 <div id="js_result">
 </div>
 <!-- リクエスト結果の表示エリア ここまで -->
-
 <script>
 document.addEventListener("DOMContentLoaded", function() {
   document.getElementById("js_form").addEventListener("submit", function(event){
@@ -46,7 +48,9 @@ document.addEventListener("DOMContentLoaded", function() {
     event.preventDefault();
 
     let xhr = new XMLHttpRequest();
-    xhr.open("POST", "/api/v1/token");
+    xhr.open("POST", "/api/v1/items/");
+    xhr.setRequestHeader("Content-Type", "application/json")
+    xhr.setRequestHeader("Authorization", `Bearer ${CookieUtil.getCookie("token")}`);
 
     // リクエストを送信した直後の処理
     xhr.addEventListener("loadstart", function(event) {
@@ -56,13 +60,11 @@ document.addEventListener("DOMContentLoaded", function() {
     // レスポンスが帰ってきたときの処理
     xhr.addEventListener('load', (event) => {
       if (xhr.status !== 200) {
-        result.textContent = `ログイン失敗 (${xhr.responseText})`
+        result.textContent = `アイテム登録失敗 (${xhr.responseText})`
         return
       }
-      let response = JSON.parse(xhr.responseText);
-      let token = response.access_token;
-      CookieUtil.setCookie("token", token)
-      result.textContent = `ログイン成功 (token=${token})`
+      // アイテム一覧画面に遷移
+      location.href = location.origin + "/items/"
     });
 
     // エラー発生時の処理
@@ -72,8 +74,12 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     // form要素をリクエストボディに設定してリクエストを送信
-    let formData = new FormData(form)
-    xhr.send(formData);
+
+    let body = {
+      "title": document.getElementById("js_title").value,
+      "content": document.getElementById("js_content").value,
+    };
+    xhr.send(JSON.stringify(body));
   });
 })
 </script>

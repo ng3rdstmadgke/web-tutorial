@@ -8,7 +8,7 @@ class Environment(BaseSettings):
     db_password: str
     db_port: str
     db_host: str
-    db_name: str = "chapter8"
+    db_name: str = "chapterx"
 
     token_expire_minutes: int = 480
     token_secret_key: str = "1234567890"

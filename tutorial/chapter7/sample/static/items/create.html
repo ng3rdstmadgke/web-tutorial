@@ -47,39 +47,26 @@ document.addEventListener("DOMContentLoaded", function() {
     // デフォルトの挙動をキャンセル
     event.preventDefault();
 
-    let xhr = new XMLHttpRequest();
-    xhr.open("POST", "/api/v1/items/");
-    xhr.setRequestHeader("Content-Type", "application/json")
-    xhr.setRequestHeader("Authorization", `Bearer ${CookieUtil.getCookie("token")}`);
-
-    // リクエストを送信した直後の処理
-    xhr.addEventListener("loadstart", function(event) {
-      result.textContent = "通信中...";
-    }, false);
-
-    // レスポンスが帰ってきたときの処理
-    xhr.addEventListener('load', (event) => {
-      if (xhr.status !== 200) {
-        result.textContent = `アイテム登録失敗 (${xhr.responseText})`
-        return
+    fetch("/api/v1/items/", {
+      method: "POST",
+      body: JSON.stringify({
+        "title": document.getElementById("js_title").value,
+        "content": document.getElementById("js_content").value,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${CookieUtil.getCookie("token")}`,
+      },
+    }).then((response) => {
+      if (!response.ok) {
+        throw new Error(`アイテム登録失敗 (${response.statusText})`)
       }
-      // アイテム一覧画面に遷移
       location.href = location.origin + "/items/"
-    });
-
-    // エラー発生時の処理
-    xhr.addEventListener('error', (event) => {
-      result.textContent = "エラー"
-      console.log(event);
-    });
-
-    // form要素をリクエストボディに設定してリクエストを送信
-
-    let body = {
-      "title": document.getElementById("js_title").value,
-      "content": document.getElementById("js_content").value,
-    };
-    xhr.send(JSON.stringify(body));
+    }).catch((error) => {
+      result.textContent = error.message
+      console.log(error);
+    })
+    result.textContent = "通信中...";
   });
 })
 </script>

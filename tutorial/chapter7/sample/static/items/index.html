@@ -36,40 +36,31 @@ function createListElem(item) {
 // ページの読み込みが完了したら発火
 document.addEventListener("DOMContentLoaded", function() {
   let result = document.getElementById("js_result");
-
-  let xhr = new XMLHttpRequest();
-  xhr.open("GET", "/api/v1/items/");
-  xhr.setRequestHeader("Authorization", `Bearer ${CookieUtil.getCookie("token")}`);
-
-  // リクエストを送信した直後の処理
-  xhr.addEventListener("loadstart", function(event) {
-    result.innerHTML = '';
-    result.textContent = "通信中...";
-  }, false);
-
-  // レスポンスが帰ってきたときの処理
-  xhr.addEventListener('load', (event) => {
-    if (xhr.status !== 200) {
-      result.textContent = `ユーザー一覧取得失敗 (${xhr.responseText})`
-      return
+  fetch("/api/v1/items/", {
+    method: "GET",
+    headers: {
+      "Authorization": `Bearer ${CookieUtil.getCookie("token")}`,
+    },
+  }).then((response) => {
+    if (!response.ok) {
+      throw new Error(`アイテム一覧取得失敗 (${response.statusText})`)
     }
+    // json() の戻り値は Promise なので、さらに then() で結果を受け取る
+    return response.json()
+  }).then((items) => {
     // 取得したユーザー一覧でli要素を作成して、ul要素に追加
     result.innerHTML = '';
-    for (let item of JSON.parse(xhr.responseText)) {
+    for (let item of items) {
       let li = createListElem(item);
       result.appendChild(li);
     }
-  });
-
-  // エラー発生時の処理
-  xhr.addEventListener('error', (event) => {
+  }).catch((error) => {
     result.innerHTML = '';
-    result.textContent = "エラー"
+    result.textContent = error.message
     console.log(event);
-  });
+  })
+  result.textContent = "通信中...";
 
-  // リクエストを送信
-  xhr.send();
 })
 </script>
 </body>

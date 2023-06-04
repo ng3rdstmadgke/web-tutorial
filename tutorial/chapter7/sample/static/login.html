@@ -45,35 +45,24 @@ document.addEventListener("DOMContentLoaded", function() {
     // デフォルトの挙動をキャンセル
     event.preventDefault();
 
-    let xhr = new XMLHttpRequest();
-    xhr.open("POST", "/api/v1/token");
-
-    // リクエストを送信した直後の処理
-    xhr.addEventListener("loadstart", function(event) {
-      result.textContent = "通信中...";
-    }, false);
-
-    // レスポンスが帰ってきたときの処理
-    xhr.addEventListener('load', (event) => {
-      if (xhr.status !== 200) {
-        result.textContent = `ログイン失敗 (${xhr.responseText})`
-        return
+    fetch("/api/v1/token", {
+      method: "POST",
+      body: new FormData(form),
+    }).then((response) => {
+      if (!response.ok) {
+        // json() の戻り値は Promise なので、さらに then() で結果を受け取る
+        throw new Error(`ログイン失敗 (${response.statusText})`)
       }
-      let response = JSON.parse(xhr.responseText);
-      let token = response.access_token;
+      return response.json()
+    }).then((json) => {
+      let token = json.access_token;
       CookieUtil.setCookie("token", token)
       result.textContent = `ログイン成功 (token=${token})`
+    }).catch((error) => { // エラー発生時の処理
+      result.textContent = error.message
+      console.log(error);
     });
-
-    // エラー発生時の処理
-    xhr.addEventListener('error', (event) => {
-      result.textContent = "エラー"
-      console.log(event);
-    });
-
-    // form要素をリクエストボディに設定してリクエストを送信
-    let formData = new FormData(form)
-    xhr.send(formData);
+    result.textContent = "通信中...";
   });
 })
 </script>

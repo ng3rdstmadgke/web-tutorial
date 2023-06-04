@@ -1033,68 +1033,117 @@ let obj = JSON.parse(json);
 
 # ■ リクエストの送信
 
-JavaScriptからAPIへのアクセスは `XMLHttpRequest` オブジェクト (xhr) を利用します。  
+APIにリクエストを送信するには `fetch()` を利用します。
 
-
-GETリクエストの場合
-
-```js
-var xhr = new XMLHttpRequest();
-
-// openメソッドでリクエスト先のURLとHTTPメソッドを指定
-// ※ 
-xhr.open("GET", "http://example.com/");
-
-// loadstartイベントはリクエスト送信時に発火
-xhr.addEventListener("loadstart", function() {
-  console.log("通信中...")
-});
-
-// loadイベントはリクエスト成功時に発火
-xhr.addEventListener("load", function() {
-  console.log(xhr.responseText)
-});
-
-// errorイベントはリクエスト失敗時に発火
-xhr.addEventListener("error", function() {
-  console.log("エラー")
-});
-
-// sendメソッドで実際にリクエストを送信します。
-xhr.send();
+```
+fetch(url [, options])
+  - url: アクセスするURL
+  - options: リクエストオプション
+    - method: リクエストメソッド(GET, POST, PUT, DELETE)
+    - headers: リクエストヘッダ ({"Content-Type": "application/json", ...})
+    - body: リクエストボディ (FormData, Blob, URLSearchParamsなど)
+    - redirect: リダイレクトの方法
+      follow: 自動でリダイレクト (default)
+      error: リダイレクト時はエラー
+      manual: 手動でリダイレクト処理
 ```
 
-POSTリクエストの場合
+`fetch` メソッドの戻り値は `Promise<Response>` オブジェクトです。  
+`then` メソッドで受け取る引数の `Response` オブジェクトには下記のようなメンバーが用意されています。
+
+```
+## プロパティ
+- ok: 成功したかどうか
+- redirected: レスポンスがリダイレクトの結果であるかどうか
+- status: HTTPstatusコード
+- statusText: statusメッセージ
+- headers: レスポンスヘッダ
+- url: レスポンスのURL
+- body: レスポンスボディ (ReadableStreamオブジェクト)
+
+## メソッド (これらのメソッドの戻り値はPromiseオブジェクトなので、thenで結果を受け取らなければならない)
+- arrayBuffer(): レスポンスボディをArrayBufferとして取得
+- blob(): レスポンスボディをBlobとして取得
+- formData(): レスポンスボディをFormDataとして取得
+- json(): レスポンスボディをJSONとして取得
+- text(): レスポンスボディをテキストとして取得
+```
+
+
+## GETリクエストの場合
 
 ```js
-var xhr = new XMLHttpRequest();
+fetch("http://example.com/items/", {
+  method: "GET",
+  headers: {
+    "Authorization": `Bearer ${jwtToken}`,  // 認証情報(jwtトークン)の設定
+  },
+}).then((response) => {
+  if (!response.ok) {
+    // レスポンスが200以外ならエラー
+    throw new Error(`${response.status} ${response.statusText}`)
+  }
+  // json() の戻り値は Promise なのでthen()で結果を受け取る
+  return response.json()
+}).then((json) => {  // 成功時の処理
+  console.log(json)
+}).catch((error) => {  // エラー時の処理
+  console.log(error.message)
+})
 
-// openメソッドでリクエスト先のURLとHTTPメソッドを指定
-xhr.open("POST", "http://example.com/users/");
-// リクエストボディがjson形式であることを定義
-xhr.setRequestHeader("Content-Type", "application/json")
-// 認証トークンを設定
-xhr.setRequestHeader("Authorization", "Bearer xxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+```
 
-// loadstartイベントはリクエスト送信時に発火
-xhr.addEventListener("loadstart", function() {
-  console.log("通信中...")
-});
+## POSTリクエストの場合
 
-// loadイベントはリクエスト成功時に発火
-xhr.addEventListener("load", function() {
-  console.log(xhr.responseText)
-});
+```js
+/**
+ * ボディにFormDataを指定する場合
+ */
+let form = document.getElementById("js_form")
+fetch("http://example.com/items/", {
+  method: "POST",
+  body: new FormData(form),
+  headers: {
+    "Authorization": `Bearer ${jwtToken}`,  // 認証情報(jwtトークン)の設定
+  },
+}).then((response) => {
+  if (!response.ok) {
+    // レスポンスが200以外ならエラー
+    throw new Error(`${response.status} ${response.statusText}`)
+  }
+  return response.json()
+}).then((json) => {  // 成功時の処理
+  console.log(json)
+}).catch((error) => {  // エラー時の処理
+  console.log(error);
+})
 
-// errorイベントはリクエスト失敗時に発火
-xhr.addEventListener("error", function() {
-  console.log("エラー")
-});
 
-// sendメソッドで実際にリクエストを送信します。
-// リクエストボディはsendメソッドの第一引数に指定します。
-let body = {"username": "ktamido", "age": 32};
-xhr.send(JSON.stringify(body));
+/**
+ * ボディにJSONを指定する場合
+ */
+fetch("http://example.com/items/", {
+  method: "POST",
+  body: JSON.stringify({
+    "title": "hogehoge",
+    "content": "fugafuga",
+  }),
+  headers: {
+    "Content-Type": "application/json",  // JSONをbodyにする場合は必須
+    "Authorization": `Bearer ${jwtToken}`,  // 認証情報(jwtトークン)の設定
+  },
+}).then((response) => {
+  if (!response.ok) {
+    // レスポンスが200以外ならエラー
+    throw new Error(`${response.status} ${response.statusText}`)
+  }
+  return response.json()
+}).then((json) => {  // 成功時の処理
+  console.log(json)
+}).catch((error) => {  // エラー時の処理
+  console.log(error);
+})
+
 ```
 
 ## ログインとユーザー一覧を表示するWebページを実装してみましょう
@@ -1176,40 +1225,30 @@ document.addEventListener("DOMContentLoaded", function() {
     // デフォルトの挙動をキャンセル
     event.preventDefault();
 
-    let xhr = new XMLHttpRequest();
-    xhr.open("POST", "/api/v1/token");
-
-    // リクエストを送信した直後の処理
-    xhr.addEventListener("loadstart", function(event) {
-      result.textContent = "通信中...";
-    }, false);
-
-    // レスポンスが帰ってきたときの処理
-    xhr.addEventListener('load', (event) => {
-      if (xhr.status !== 200) {
-        result.textContent = `ログイン失敗 (${xhr.responseText})`
-        return
+    fetch("/api/v1/token", {
+      method: "POST",
+      body: new FormData(form),
+    }).then((response) => {
+      if (!response.ok) {
+        // json() の戻り値は Promise なので、さらに then() で結果を受け取る
+        throw new Error(`ログイン失敗 (${response.statusText})`)
       }
-      let response = JSON.parse(xhr.responseText);
-      let token = response.access_token;
+      return response.json()
+    }).then((json) => {
+      let token = json.access_token;
       CookieUtil.setCookie("token", token)
       result.textContent = `ログイン成功 (token=${token})`
+    }).catch((error) => { // エラー発生時の処理
+      result.textContent = error.message
+      console.log(error);
     });
-
-    // エラー発生時の処理
-    xhr.addEventListener('error', (event) => {
-      result.textContent = "エラー"
-      console.log(event);
-    });
-
-    // form要素をリクエストボディに設定してリクエストを送信
-    let formData = new FormData(form)
-    xhr.send(formData);
+    result.textContent = "通信中...";
   });
 })
 </script>
 </body>
 </html>
+
 ```
 
 アイテム一覧画面の実装します。
@@ -1254,40 +1293,30 @@ function createListElem(item) {
 // ページの読み込みが完了したら発火
 document.addEventListener("DOMContentLoaded", function() {
   let result = document.getElementById("js_result");
-
-  let xhr = new XMLHttpRequest();
-  xhr.open("GET", "/api/v1/items/");
-  xhr.setRequestHeader("Authorization", `Bearer ${CookieUtil.getCookie("token")}`);
-
-  // リクエストを送信した直後の処理
-  xhr.addEventListener("loadstart", function(event) {
-    result.innerHTML = '';
-    result.textContent = "通信中...";
-  }, false);
-
-  // レスポンスが帰ってきたときの処理
-  xhr.addEventListener('load', (event) => {
-    if (xhr.status !== 200) {
-      result.textContent = `ユーザー一覧取得失敗 (${xhr.responseText})`
-      return
+  fetch("/api/v1/items/", {
+    method: "GET",
+    headers: {
+      "Authorization": `Bearer ${CookieUtil.getCookie("token")}`,
+    },
+  }).then((response) => {
+    if (!response.ok) {
+      throw new Error(`アイテム一覧取得失敗 (${response.statusText})`)
     }
+    return response.json()
+  }).then((items) => {
     // 取得したユーザー一覧でli要素を作成して、ul要素に追加
     result.innerHTML = '';
-    for (let item of JSON.parse(xhr.responseText)) {
+    for (let item of items) {
       let li = createListElem(item);
       result.appendChild(li);
     }
-  });
-
-  // エラー発生時の処理
-  xhr.addEventListener('error', (event) => {
+  }).catch((error) => {
     result.innerHTML = '';
-    result.textContent = "エラー"
+    result.textContent = error.message
     console.log(event);
-  });
+  })
+  result.textContent = "通信中...";
 
-  // リクエストを送信
-  xhr.send();
 })
 </script>
 </body>
@@ -1348,44 +1377,33 @@ document.addEventListener("DOMContentLoaded", function() {
     // デフォルトの挙動をキャンセル
     event.preventDefault();
 
-    let xhr = new XMLHttpRequest();
-    xhr.open("POST", "/api/v1/items/");
-    xhr.setRequestHeader("Content-Type", "application/json")
-    xhr.setRequestHeader("Authorization", `Bearer ${CookieUtil.getCookie("token")}`);
-
-    // リクエストを送信した直後の処理
-    xhr.addEventListener("loadstart", function(event) {
-      result.textContent = "通信中...";
-    }, false);
-
-    // レスポンスが帰ってきたときの処理
-    xhr.addEventListener('load', (event) => {
-      if (xhr.status !== 200) {
-        result.textContent = `アイテム登録失敗 (${xhr.responseText})`
-        return
+    fetch("/api/v1/items/", {
+      method: "POST",
+      body: JSON.stringify({
+        "title": document.getElementById("js_title").value,
+        "content": document.getElementById("js_content").value,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${CookieUtil.getCookie("token")}`,
+      },
+    }).then((response) => {
+      if (!response.ok) {
+        // json() の戻り値は Promise なので、さらに then() で結果を受け取る
+        throw new Error(`アイテム登録失敗 (${response.statusText})`)
       }
-      // アイテム一覧画面に遷移
       location.href = location.origin + "/items/"
-    });
-
-    // エラー発生時の処理
-    xhr.addEventListener('error', (event) => {
-      result.textContent = "エラー"
-      console.log(event);
-    });
-
-    // form要素をリクエストボディに設定してリクエストを送信
-
-    let body = {
-      "title": document.getElementById("js_title").value,
-      "content": document.getElementById("js_content").value,
-    };
-    xhr.send(JSON.stringify(body));
+    }).catch((error) => {
+      result.textContent = error.message
+      console.log(error);
+    })
+    result.textContent = "通信中...";
   });
 })
 </script>
 </body>
 </html>
+
 ```
 
 

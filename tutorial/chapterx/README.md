@@ -72,7 +72,7 @@ Vuetifyはvueで利用できるuiコンポーネントフレームワークで�
 npm install -D vuetify sass
 ```
 
-### nuxt.config.ts設定
+nuxt.config.ts設定
 
 - [Nuxt Configuration Reference | Nuxt3](https://nuxt.com/docs/api/configuration/nuxt-config)
 
@@ -92,7 +92,7 @@ export default defineNuxtConfig({
 })
 ```
 
-### NuxtのプラグインでVuetifyを読み込む
+NuxtのプラグインでVuetifyを読み込み
 
 ```ts
 // --- front/plugins/vuetify.ts ---
@@ -107,6 +107,27 @@ export default defineNuxtPlugin(nuxtApp => {
 
   // Vue.js で Vuetify を使用する
   nuxtApp.vueApp.use(vuetify)
+})
+```
+
+### vuetifyに定義されているCSSを利用できるようにする
+
+vuetifyに定義されているCSSをグローバルに設定することで、自身のテンプレートから参照できるようにします。
+
+```scss
+/* --- front/layouts/main.scss --- */
+@use "vuetify/styles";
+```
+
+```ts
+// --- front/nuxt.config.ts ---
+
+// ... 略 ...
+
+export default defineNuxtConfig({
+  // ... 略 ...
+
+  css: ['@/assets/main.scss'],
 })
 ```
 

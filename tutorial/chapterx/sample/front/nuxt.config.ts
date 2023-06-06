@@ -8,6 +8,7 @@ export default defineNuxtConfig({
     // build.transpile: https://nuxt.com/docs/api/configuration/nuxt-config#transpile
     transpile: ['vuetify'],
   },
+  css: ['@/assets/main.scss'],
   modules: [
     // vite-plugin-vuetifyで必要なvuetifyのコンポーネントのみをバンドルするための設定
     async (options, nuxt) => {

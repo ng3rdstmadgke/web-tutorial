@@ -78,6 +78,7 @@ npm install -D vuetify sass
 
 ```ts
 // --- front/nuxt.config.ts ---
+
 import { defineNuxtConfig } from 'nuxt/config'
 import vuetify from 'vite-plugin-vuetify'
 
@@ -95,6 +96,7 @@ export default defineNuxtConfig({
 
 ```ts
 // --- front/plugins/vuetify.ts ---
+
 import { createVuetify } from 'vuetify'
 
 export default defineNuxtPlugin(nuxtApp => {
@@ -121,6 +123,8 @@ npm install -D vite-plugin-vuetify
 ```
 
 ```ts
+// --- front/nuxt.config.ts ---
+
 // ... 略 ...
 import vuetify from 'vite-plugin-vuetify'
 
@@ -201,3 +205,40 @@ import { mdiAccount } from '@mdi/js'
 ## テーマの設定
 
 - [Theme | Vuetify](https://vuetifyjs.com/en/features/theme/)
+
+
+```ts
+// --- front/plugins/vuetify.ts ---
+
+import { createVuetify, ThemeDefinition } from 'vuetify'   // 変更
+// ... 略 ...
+
+// カスタムテーマを定義
+const myCustomLightTheme: ThemeDefinition = {
+  dark: false,
+  colors: {
+      primary: "#673ab7",
+      secondary: "#9c27b0",
+      accent: "#009688",
+      error: "#ff5722",
+      warning: "#ffc107",
+      info: "#2196f3",
+      success: "#4caf50",
+  },
+}
+
+
+export default defineNuxtPlugin(nuxtApp => {
+  const vuetify = createVuetify({
+    // ... 略 ...
+    theme: {
+      defaultTheme: "myCustomLightTheme",
+      themes: {
+        myCustomLightTheme,
+      }
+    }
+  })
+  // ... 略 ...
+})
+
+```

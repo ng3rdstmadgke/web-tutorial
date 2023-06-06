@@ -1,6 +1,6 @@
 <template>
   <div>
-    <VBtn>ほげ</VBtn>
+    <VBtn color="primary">ほげ</VBtn>
     <v-icon :icon="mdiAccount" />
     <p class="my-button">my button</p>
     <NuxtWelcome />

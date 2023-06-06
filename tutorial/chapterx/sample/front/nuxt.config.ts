@@ -8,22 +8,22 @@ export default defineNuxtConfig({
     // build.transpile: https://nuxt.com/docs/api/configuration/nuxt-config#transpile
     transpile: ['vuetify'],
   },
-  // Nuxtイベントのリスナー
-  hooks: {
-    'vite:extendConfig': (config) => {
-      config.plugins!.push(vuetify())
+  modules: [
+    // vite-plugin-vuetifyで必要なvuetifyのコンポーネントのみをバンドルするための設定
+    async (options, nuxt) => {
+      nuxt.hooks.hook('vite:extendConfig', (config) => {
+        config.plugins!.push(vuetify())
+      })
     },
-  },
-  // グローバルに設定したいCSSファイル・モジュールをセット
-  // css: https://nuxt.com/docs/api/configuration/nuxt-config#css
-  css: [
-    'vuetify/styles'
   ],
+  // viteの設定: https://ja.vitejs.dev/config/
   vite: {
-    ssr: {
+    ssr: {  // SSRオプション: https://ja.vitejs.dev/config/ssr-options.html
+      // 指定した依存関係が SSR のために外部化されるのを防ぎます。
       noExternal: ['vuetify'],
     },
-    define: {
+    define: {  // define: https://ja.vitejs.dev/config/shared-options.html#define
+      // グローバル定数の定義
       'process.env.DEBUG': false,
     },
   },

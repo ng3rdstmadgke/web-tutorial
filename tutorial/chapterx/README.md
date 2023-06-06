@@ -69,44 +69,13 @@ Vuetifyはvueで利用できるuiコンポーネントフレームワークで�
 # sass
 #   - CSSの拡張言語
 #   - vueファイル内で <style lang="scss"> を利用するために必要
-# vite-plugin-vuetify
-#   - Vuetifyコンポーネントの自動インポートを行う
-#   - トランスパイル後のバンドルサイズを小さくする
-# @mdi/js
-#   - アイコンフォント
-npm install -D vuetify sass vite-plugin-vuetify
+npm install -D vuetify sass
 ```
 
-### NuxtのプラグインでVuetifyを読み込む
-
-```ts
-// --- front/plugins/vuetify.ts ---
-import { createVuetify } from 'vuetify'
-import * as components from 'vuetify/components'  // Vuetifyのすべてのコンポーネントを読み込む
-import * as directives from 'vuetify/directives'  // Vuetifyのすべてのディレクティブを読み込む
-
-export default defineNuxtPlugin(nuxtApp => {
-  /**
-   * createVuetifyメソッドでVuetifyインスタンスを作成し、Nuxt.jsの vueApp に登録します。
-   * componentsとdirectivesを含めることで、Nuxt.jsアプリ内でVuetifyのコンポーネントとディレクティブが使用可能になります。
-   */
-  const vuetify = createVuetify({
-    ssr: true,  // Vue3はssrが利用されているかを自動的に検出できないので、明示的にssrの利用有無を設定する
-    // 各種設定の読み込み
-    components,  // すべてのコンポーネントをincludeする
-    directives,  // すべてのディレクティブをincludeする
-  })
-
-  // Vue.js で Vuetify を使用する
-  nuxtApp.vueApp.use(vuetify)
-})
-```
-
-
-
-## nuxt.config.ts設定
+### nuxt.config.ts設定
 
 - [Nuxt Configuration Reference | Nuxt3](https://nuxt.com/docs/api/configuration/nuxt-config)
+
 ```ts
 // --- front/nuxt.config.ts ---
 import { defineNuxtConfig } from 'nuxt/config'
@@ -119,31 +88,74 @@ export default defineNuxtConfig({
     // build.transpile: https://nuxt.com/docs/api/configuration/nuxt-config#transpile
     transpile: ['vuetify'],
   },
-  // Nuxtイベントのリスナー
-  hooks: {
-    'vite:extendConfig': (config) => {
-      config.plugins!.push(vuetify())
+})
+```
+
+### NuxtのプラグインでVuetifyを読み込む
+
+```ts
+// --- front/plugins/vuetify.ts ---
+import { createVuetify } from 'vuetify'
+
+export default defineNuxtPlugin(nuxtApp => {
+  // createVuetifyメソッドでVuetifyインスタンスを作成し、Nuxt.jsの vueApp に登録します。
+  const vuetify = createVuetify({
+    ssr: true,  // Vue3はssrが利用されているかを自動的に検出できないので、明示的にssrの利用有無を設定する
+  })
+
+  // Vue.js で Vuetify を使用する
+  nuxtApp.vueApp.use(vuetify)
+})
+```
+
+
+### Treeshakingの設定
+
+Treeshakingとは、実際に利用するコンポーネントのみをバンドルすることで、ビルドサイズを小さくできる仕組みです。
+
+- [Treeshaking | Vuetify](https://vuetifyjs.com/en/features/treeshaking/)
+
+```bash
+# vite-plugin-vuetify: https://www.npmjs.com/package/webpack-plugin-vuetify
+npm install -D vite-plugin-vuetify
+```
+
+```ts
+// ... 略 ...
+import vuetify from 'vite-plugin-vuetify'
+
+export default defineNuxtConfig({
+  // ... 略 ...
+
+  modules: [
+    async (options, nuxt) => {
+      nuxt.hooks.hook('vite:extendConfig', config => config.plugins.push(
+        vuetify()
+      ))
     },
-  },
-  // グローバルに設定したいCSSファイル・モジュールをセット
-  // css: https://nuxt.com/docs/api/configuration/nuxt-config#css
-  css: [
-    'vuetify/styles',  // vuetifyのCSSをグローバルにセット
   ],
+  // viteの設定: https://ja.vitejs.dev/config/
   vite: {
-    ssr: {
+    ssr: {  // SSRオプション: https://ja.vitejs.dev/config/ssr-options.html
+      // 指定した依存関係が SSR のために外部化されるのを防ぎます。
       noExternal: ['vuetify'],
     },
-    define: {
+    define: {  // define: https://ja.vitejs.dev/config/shared-options.html#define
+      // グローバル定数の定義
       'process.env.DEBUG': false,
     },
   },
 })
 ```
 
-## アイコンフォント(mdi) の導入
+
+### アイコンフォント(mdi) の設定
 
 mdiはサイズが大きいので、利用したもののみバンドルするように設定します。
+
+- [Material Design Icons - JS SVG | Vuetify](https://vuetifyjs.com/en/features/icon-fonts/#material-design-icons-js-svg)
+- [Material Design Icons | Pictogrammers](https://pictogrammers.com/library/mdi/)
+
 
 ```bash
 npm install -D @mdi/js
@@ -170,7 +182,7 @@ export default defineNuxtPlugin(nuxtApp => {
 })
 ```
 
-下記のような語りで利用できるようになります。
+下記のようにアイコンを利用できます。
 
 ```vue
 <!-- --- front/app.vue -->
@@ -187,3 +199,5 @@ import { mdiAccount } from '@mdi/js'
 ```
 
 ## テーマの設定
+
+- [Theme | Vuetify](https://vuetifyjs.com/en/features/theme/)

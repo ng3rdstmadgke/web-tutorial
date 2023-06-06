@@ -9,7 +9,11 @@
     "postinstall": "nuxt prepare"
   },
   "devDependencies": {
+    "@mdi/js": "^7.2.96",
     "@types/node": "^18",
-    "nuxt": "^3.5.2"
+    "nuxt": "^3.5.2",
+    "sass": "^1.62.1",
+    "vite-plugin-vuetify": "^1.0.2",
+    "vuetify": "^3.3.2"
   }
 }

@@ -4,13 +4,13 @@ import { aliases, mdi } from 'vuetify/iconsets/mdi-svg';
 const myCustomLightTheme: ThemeDefinition = {
   dark: false,
   colors: {
-      primary: "#673ab7",
-      secondary: "#9c27b0",
-      accent: "#009688",
-      error: "#ff5722",
-      warning: "#ffc107",
-      info: "#2196f3",
-      success: "#4caf50",
+      primary: "#1F2D5A",
+      secondary: "#38508a",
+      accent: "#FB8C00",
+      success: "#43A047",
+      info: "#0288D1",
+      warning: "#FFC107",
+      error: "#F44336",
   },
 }
 

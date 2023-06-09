@@ -10,6 +10,10 @@ cat >&2 <<EOS
 [options]
  -h | --help:
    ヘルプを表示
+ -u | --uid <USER_ID>:
+   ユーザーidを指定
+ -g | --gid <GROUP_ID>:
+   グループidを指定
  --sample:
    サンプルコードで起動
  -m | --mode <MODE>:
@@ -39,10 +43,14 @@ cd "$PROJECT_ROOT"
 ENV_PATH="${PROJECT_ROOT}/local.env"
 IS_SAMPLE=
 MODE="app"
+USER_ID=$(id -u)
+GROUP_ID=$(id -g)
 args=()
 while [ "$#" != 0 ]; do
   case $1 in
     -h | --help      ) usage;;
+    -u | --uid    ) shift; USER_ID=$1 ;;
+    -g | --gid    ) shift; GROUP_ID=$1 ;;
     --sample         ) IS_SAMPLE=1;;
     -m | --mode           ) shift; MODE="$1";;
     -* | --*         ) echo "$1 : 不正なオプションです" >&2; exit 1;;
@@ -73,8 +81,8 @@ docker build \
   --build-arg http_proxy=$https_proxy \
   --build-arg https_proxy=$https_proxy \
   --build-arg no_proxy=$NO_PROXY \
-  --build-arg host_uid=$(id -u) \
-  --build-arg host_gid=$(id -g) \
+  --build-arg host_uid=$USER_ID \
+  --build-arg host_gid=$GROUP_ID \
   --rm \
   -f docker/app/Dockerfile \
   -t fastapi-tutorial:latest \
@@ -101,7 +109,7 @@ docker run \
   --network host \
   --env-file "$ENV_PATH" \
   -e "DB_NAME=$(echo $CHAPTER | sed -e 's/[^a-zA-Z0-9]/_/g')" \
-  --user="$(id -u):$(id -g)" \
+  --user="$USER_ID:$GROUP_ID" \
   -w /opt/app \
   -v ${LOCAL_APP_DIR}:/opt/app \
   fastapi-tutorial:latest \

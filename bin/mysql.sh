@@ -24,7 +24,7 @@ args=()
 while [ "$#" != 0 ]; do
   case $1 in
     -h | --help   ) usage;;
-    -* | --*         ) echo "$1 : 不正なオプションです" >&2; exit 1;;
+    -* | --*      ) echo "$1 : 不正なオプションです" >&2; exit 1;;
     *             ) args+=("$1");;
   esac
   shift
@@ -36,8 +36,8 @@ set -e
 export $(cat $ENV_PATH | grep -v -e "^ *#")
 
 # docker build
+export DOCKER_BUILDKIT=1
 docker build \
-  -q \
   --rm \
   -f docker/mysql/Dockerfile \
   -t fastapi-tutorial-mysql:latest \

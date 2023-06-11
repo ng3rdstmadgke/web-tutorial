@@ -11,7 +11,7 @@ ENV https_proxy=$https_proxy
 ENV NO_PROXY=$no_proxy
 
 RUN apt update && \
-    apt install -y locales curl default-mysql-client jq unzip groff less vim fzf net-tools iputils-ping sudo tmux
+    apt install -y locales curl default-mysql-client jq unzip groff less vim fzf net-tools iputils-ping sudo tmux gcc
 
 # ロケール設定
 RUN echo 'ja_JP.UTF-8 UTF-8' >> /etc/locale.gen && \

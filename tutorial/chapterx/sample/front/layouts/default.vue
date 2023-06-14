@@ -5,24 +5,27 @@
       <v-app-bar-title>
         SampleApp
       </v-app-bar-title>
-      <v-btn :icon="mdiLogout" @click="logout()"></v-btn>
+      <v-btn v-if="auth.authenticated()" :icon="mdiLogout" @click="logout()"></v-btn>
     </v-app-bar>
     <v-navigation-drawer v-model="drawer">
       
-      <v-sheet v-if="payload" color="grey-lighten-4" class="pa-4" >
-        <v-avatar class="mb-4" color="accent" size="64" >{{ payload?.sub[0] }}</v-avatar>
-        <div>{{ payload?.sub }}</div>
+      <v-sheet v-if="auth.authenticated()" color="grey-lighten-4" class="pa-4" >
+        <v-avatar class="mb-4" color="accent" size="64" >{{ auth.getPayload()?.sub[0] }}</v-avatar>
+        <div>{{ auth.getPayload()?.sub }}</div>
       </v-sheet>
 
       <v-divider></v-divider>
 
       <v-list>
-        <v-list-item v-for="[icon, text, path] in links" :key="text" link :to="path">
-          <template v-slot:prepend>
-            <v-icon>{{ icon }}</v-icon>
-          </template>
-          <v-list-item-title>{{ text }}</v-list-item-title>
-        </v-list-item>
+        <template v-for="item in menu" :key="item.name" >
+          <v-list-item v-if="item.authenticated === auth.authenticated()" link :to="item.path">
+            <template v-slot:prepend>
+              <v-icon>{{ item.icon }}</v-icon>
+            </template>
+            <v-list-item-title>{{ item.name }}</v-list-item-title>
+          </v-list-item>
+
+        </template>
       </v-list>
     </v-navigation-drawer>
     <v-main>
@@ -40,24 +43,40 @@
 
 <script setup lang="ts">
 import { mdiAccount, mdiNote, mdiLogout, mdiLogin, mdiInformation } from '@mdi/js'
+//import { useAuth } from "~/utils/auth"
+
+interface MenuItem {
+  icon: string
+  name: string
+  path: string
+  authenticated: boolean}
 
 const drawer = ref<boolean>(true)
-const links = ref<Array<[any, string, string]>>([
-  [mdiInformation, 'top', "/"],
-  [mdiLogin, 'Login', "/login"],
-  [mdiNote, 'Item', "/items/"],
-  [mdiAccount, 'User', "/users/"],
+const menu = ref<Array<MenuItem>>([
+  {
+    icon: mdiLogin,
+    name: "Login",
+    path: "/login",
+    authenticated: false,
+  },
+  {
+    icon: mdiNote,
+    name: "Item",
+    path: "/items/",
+    authenticated: true,
+  },
+  {
+    icon: mdiAccount,
+    name: "User",
+    path: "/users/",
+    authenticated: true,
+  },
 ])
 
-
-// login.vueはlayouts/default.vueの子コンポーネントなので、
-// ログイン後に「ログインした」という情報がlayouts/default.vueに伝わらない。
-// そのため、useStateを使ってlayouts/default.vueにログイン情報情報を伝える。
-const payload = useState("tokenPayload")
+const auth = useAuth()
 
 function logout() {
   useAuth().logout()
-  payload.value = null
   useRouter().push({path: "/login"})
 }
 </script>

@@ -46,6 +46,8 @@
 </template>
 
 <script setup lang="ts">
+//import { useAuth } from "~/utils/auth"
+
 const username = ref<string>("")
 const password = ref<string>("")
 const loginError = ref<Error | null>(null)
@@ -68,6 +70,9 @@ async function submit() {
         headers: {},
         body: form,
       })
+    },
+    {
+      server: false,
     }
   )
   if (! data.value || error.value) {

@@ -45,11 +45,8 @@ class Auth {
     let payload = this.getPayload()
     if (payload) {
       // トークンの有効期限を検証
-      let exp  = parseInt(payload["exp"]);
       let now  = Math.floor((new Date()).getTime() / 1000)
-      if (exp && exp > now) {
-        return true
-      }
+      return payload.exp > now
     }
     return false
   }
@@ -58,14 +55,12 @@ class Auth {
   public static logout(): void {
     const cookie = useCookie(this.ACCESS_TOKEN_KEY)
     cookie.value = null
-    const tokenPayload = useState("tokenPayload", () => Auth.getPayload())
   }
 
   // JWTをCookieに保存
   public static login(token: string): void {
     const cookie = useCookie(this.ACCESS_TOKEN_KEY)
     cookie.value = token
-    const tokenPayload = useState("tokenPayload", () => Auth.getPayload())
   }
 
   // Cookieに保存されているTokenのJWTのheaderをオブジェクト形式で取得する
@@ -79,10 +74,14 @@ class Auth {
   }
 
   // Cookieに保存されているTokenのJWTのpayloadをオブジェクト形式で取得する
-  public static getPayload(): {[index: string]: any} | null {
+  public static getPayload(): tokenPayload | null {
     const cookie = useCookie(this.ACCESS_TOKEN_KEY)
     let token = cookie.value
     if (!token) return null
+    return Auth.parsePayload(token)
+  }
+
+  private static parsePayload(token: string): tokenPayload | null {
     let payload = token.split(".")[1]
     let decoded = Buffer.from(payload, "base64").toString()
     return JSON.parse(decoded)

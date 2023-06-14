@@ -1,5 +1,6 @@
 <template>
-  <v-app id="inspire">
+  <v-app>
+    <!-- ヘッダー >>> -->
     <v-app-bar color="primary" :elevation="2">
       <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       <v-app-bar-title>
@@ -7,15 +8,18 @@
       </v-app-bar-title>
       <v-btn v-if="auth.authenticated()" :icon="mdiLogout" @click="logout()"></v-btn>
     </v-app-bar>
+    <!-- <<< ヘッダー -->
+
+    <!-- サイドメニュー >>> -->
     <v-navigation-drawer v-model="drawer">
-      
+      <!-- プロフィール表示 -->
       <v-sheet v-if="auth.authenticated()" color="grey-lighten-4" class="pa-4" >
         <v-avatar class="mb-4" color="accent" size="64" >{{ auth.getPayload()?.sub[0] }}</v-avatar>
         <div>{{ auth.getPayload()?.sub }}</div>
       </v-sheet>
-
       <v-divider></v-divider>
 
+      <!-- メニュー -->
       <v-list>
         <template v-for="item in menu" :key="item.name" >
           <v-list-item v-if="item.authenticated === auth.authenticated()" link :to="item.path">
@@ -24,20 +28,24 @@
             </template>
             <v-list-item-title>{{ item.name }}</v-list-item-title>
           </v-list-item>
-
         </template>
       </v-list>
     </v-navigation-drawer>
+    <!-- <<< サイドメニュー -->
+
+    <!-- メイン >>> -->
     <v-main>
       <v-container class="py-8 px-6" fluid >
         <slot />
       </v-container>
     </v-main>
-    <v-footer>
-      <div class="d-flex justify-center">
-        <div>&copy; 2021</div>
-      </div>
+    <!-- <<< メイン -->
+
+    <!-- フッター >>> -->
+    <v-footer class="footer justify-center">
+      <div>&copy; 2023 ktamido</div>
     </v-footer>
+    <!-- <<< フッター -->
   </v-app>
 </template>
 
@@ -80,3 +88,11 @@ function logout() {
   useRouter().push({path: "/login"})
 }
 </script>
+
+<style lang="scss">
+.footer {
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+}
+</style>

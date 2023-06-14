@@ -24,6 +24,10 @@
 // 明示的なインポートは不要だが、IDEの補完を効かせるために記述している
 import { ref } from 'vue'
 
+definePageMeta({
+  middleware: ["auth"]
+})
+
 interface Article {
   id: number
   title: string

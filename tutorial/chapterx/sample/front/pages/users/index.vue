@@ -1,19 +1,23 @@
 <template>
   <div>
     <div class="mb-3">
-      <div class="text-h4">Items</div>
+      <div class="text-h4">Users</div>
     </div>
     <v-table>
       <thead>
         <tr>
           <th>id</th>
-          <th>title</th>
+          <th>username</th>
+          <th>age</th>
+          <th>roles</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="article in articles" :key="article.id">
-          <td>{{ article.id }}</td>
-          <td>{{ article.title }}</td>
+        <tr v-for="user in users" :key="user.id">
+          <td>{{ user.id }}</td>
+          <td>{{ user.username }}</td>
+          <td>{{ user.age }}</td>
+          <td>{{ user.roles.map((e) => e.name).join(", ") }}</td>
         </tr>
       </tbody>
     </v-table>
@@ -28,20 +32,25 @@ definePageMeta({
   middleware: ["auth"]
 })
 
-
-interface Article {
+interface User {
   id: number
-  title: string
+  username: string
+  age: number
+  roles: {
+    id: number
+    name: string
+  }[]
 }
-const articles = ref<Article[]>([])
-articles.value = [
-  {
-    id: 1,
-    title: "Nuxt3入門",
-  },
-  {
-    id: 2,
-    title: "Jest再入門",
-  },
-]
+
+const { data: users, pending, error, refresh } = await useAsyncData<User[]>(
+  "getArticles",
+  () => {
+    return $fetch("//localhost:8018/api/v1/users/", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${useAuth().getToken()}`,
+      },
+    })
+  }
+)
 </script>

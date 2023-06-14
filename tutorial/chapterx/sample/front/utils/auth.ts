@@ -78,10 +78,6 @@ class Auth {
     const cookie = useCookie(this.ACCESS_TOKEN_KEY)
     let token = cookie.value
     if (!token) return null
-    return Auth.parsePayload(token)
-  }
-
-  private static parsePayload(token: string): tokenPayload | null {
     let payload = token.split(".")[1]
     let decoded = Buffer.from(payload, "base64").toString()
     return JSON.parse(decoded)
@@ -99,6 +95,12 @@ class Auth {
     // 積集合
     let actual = new Set(scopes.filter(x => required_permission_set.has(x)))
     return actual.size == required_permission_set.size
+  }
+
+  public static getToken(): string | null {
+    const cookie = useCookie(this.ACCESS_TOKEN_KEY);
+    let token = cookie.value;
+    return (token && Auth.authenticated()) ? token : null;
   }
 
 }

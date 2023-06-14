@@ -2,9 +2,6 @@
 <div>
   <v-alert v-if="loginError" dismissible type="error">{{ loginError }}</v-alert>
   <!--
-  <v-alert v-else-if="loginError" dismissible type="info">ログイン成功! </v-alert>
-  -->
-  <!--
     https://vuetifyjs.com/ja/components/forms/#submit-26-clear3067306e30d030ea30c730fc30b730e730f3
 
     v-form コンポーネントはref属性を設定することで、3つの関数にアクセスできる
@@ -57,7 +54,6 @@ interface LoginResponse {
   token_type: string
 }
 
-//const loginResponse = ref<LoginResponse | null>(null)
 async function submit() {
   const { data, pending, error, refresh } = await useAsyncData<LoginResponse>(
     "getArticles",

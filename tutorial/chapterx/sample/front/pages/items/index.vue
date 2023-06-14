@@ -11,9 +11,9 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="article in articles" :key="article.id">
-          <td>{{ article.id }}</td>
-          <td>{{ article.title }}</td>
+        <tr v-for="item in items" :key="item.id">
+          <td>{{ item.id }}</td>
+          <td>{{ item.title }}</td>
         </tr>
       </tbody>
     </v-table>
@@ -28,19 +28,22 @@ definePageMeta({
   middleware: ["auth"]
 })
 
-interface Article {
+interface Item {
   id: number
   title: string
+  content: string
 }
-const articles = ref<Article[]>([])
-articles.value = [
-  {
-    id: 1,
-    title: "Nuxt3入門",
-  },
-  {
-    id: 2,
-    title: "Jest再入門",
-  },
-]
+
+const { data: items, pending, error, refresh } = await useAsyncData<Item[]>(
+  "getArticles",
+  () => {
+    return $fetch("//localhost:8018/api/v1/items/", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${useAuth().getToken()}`,
+      },
+    })
+  }
+)
+
 </script>

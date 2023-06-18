@@ -4,14 +4,16 @@
     <v-app-bar color="primary" :elevation="2">
       <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       <v-app-bar-title>
-        SampleApp
+        <div @click="useRouter().push('/')" style="cursor: pointer;">SampleApp</div>
       </v-app-bar-title>
       <v-btn v-if="auth.authenticated()" :icon="mdiLogout" @click="logout()"></v-btn>
     </v-app-bar>
     <!-- <<< ヘッダー -->
 
     <!-- サイドメニュー >>> -->
-    <v-navigation-drawer v-model="drawer">
+    <v-navigation-drawer
+      v-model="drawer"
+    >
       <!-- プロフィール表示 -->
       <v-sheet v-if="auth.authenticated()" color="grey-lighten-4" class="pa-4" >
         <v-avatar class="mb-4" color="accent" size="64" >{{ auth.getPayload()?.sub[0] }}</v-avatar>
@@ -59,7 +61,7 @@ interface MenuItem {
   path: string
   authenticated: boolean}
 
-const drawer = ref<boolean>(true)
+const drawer = ref<boolean>(false)
 const menu = ref<Array<MenuItem>>([
   {
     icon: mdiLogin,

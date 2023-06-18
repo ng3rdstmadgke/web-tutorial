@@ -3,17 +3,25 @@
     <div class="mb-3">
       <div class="text-h4">Items</div>
     </div>
+    <div class="d-flex justify-end">
+      <div>
+        <v-btn color="primary" :icon="mdiPlusBoxMultipleOutline" link to="/items/create"></v-btn>
+      </div>
+    </div>
     <v-table>
       <thead>
         <tr>
           <th>id</th>
           <th>title</th>
+          <th>action</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="item in items" :key="item.id">
           <td>{{ item.id }}</td>
           <td>{{ item.title }}</td>
+          <td>
+          </td>
         </tr>
       </tbody>
     </v-table>
@@ -23,6 +31,7 @@
 <script setup lang="ts">
 // 明示的なインポートは不要だが、IDEの補完を効かせるために記述している
 import { ref } from 'vue'
+import { mdiPlusBoxMultipleOutline } from '@mdi/js'
 
 definePageMeta({
   middleware: ["auth"]
@@ -35,7 +44,7 @@ interface Item {
 }
 
 const { data: items, pending, error, refresh } = await useAsyncData<Item[]>(
-  "getArticles",
+  "getItems",
   () => {
     return $fetch("//localhost:8018/api/v1/items/", {
       method: "GET",

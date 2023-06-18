@@ -56,7 +56,7 @@ class Environment(BaseSettings):
 次にDBのセッションを管理する、セッションファクトリーを定義します。
 
 ```python
-# -- db.py --
+# -- session.py --
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 

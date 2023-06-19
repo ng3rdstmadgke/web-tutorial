@@ -1,9 +1,14 @@
 <template>
   <div>
+    <v-alert v-if="getError" dismissible type="error">{{ getError }}</v-alert>
+    <v-alert v-if="deleteError" dismissible type="error">{{ deleteError }}</v-alert>
     <div class="mb-3">
       <div class="text-h4">Items</div>
     </div>
     <div class="d-flex justify-end">
+      <div class="mr-3">
+        <v-btn :icon="mdiRefresh" @click="refreshItems"></v-btn>
+      </div>
       <div>
         <v-btn color="primary" :icon="mdiPlusBoxMultipleOutline" link to="/items/create"></v-btn>
       </div>
@@ -21,21 +26,46 @@
           <td>{{ item.id }}</td>
           <td>{{ item.title }}</td>
           <td>
+            <div class="d-flex">
+              <div>
+                <v-btn icon flat link :to="`/items/${item.id}/create`">
+                  <v-icon color="warning" :icon="mdiNoteEditOutline"></v-icon>
+                </v-btn>
+              </div>
+              <div>
+                <v-btn icon flat @click="confirmDeletion.open({id: item.id})">
+                  <v-icon color="error" :icon="mdiDeleteForeverOutline"></v-icon>
+                </v-btn>
+              </div>
+            </div>
           </td>
         </tr>
       </tbody>
     </v-table>
+    <ConfirmDialog
+      title="アイテムの削除"
+      message="本当に削除しますか"
+      confirmBtn="削除"
+      cancelBtn="キャンセル"
+      colorCancel="primary"
+      colorConfirm="error"
+      ref="confirmDeletion"
+      @confirm="deleteItem">
+    </ConfirmDialog>
   </div>
 </template>
 
 <script setup lang="ts">
 // 明示的なインポートは不要だが、IDEの補完を効かせるために記述している
 import { ref } from 'vue'
-import { mdiPlusBoxMultipleOutline } from '@mdi/js'
+import { mdiPlusBoxMultipleOutline, mdiNoteEditOutline, mdiDeleteForeverOutline, mdiRefresh } from '@mdi/js'
 
 definePageMeta({
   middleware: ["auth"]
 })
+
+// Confirmコンポーネントのref
+const confirmDeletion = ref<any>(null)
 
 interface Item {
   id: number
@@ -43,16 +73,43 @@ interface Item {
   content: string
 }
 
-const { data: items, pending, error, refresh } = await useAsyncData<Item[]>(
+// アイテム一覧取得
+const { data: items, pending, error: getError, refresh: refreshItems } = await useAsyncData<Item[]>(
   "getItems",
   () => {
-    return $fetch("//localhost:8018/api/v1/items/", {
+    // サーバーサイドレンダリング時のURLは "http://" を付けないといけない
+    return $fetch("http://localhost:8018/api/v1/items/", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${useAuth().getToken()}`,
       },
     })
-  }
+  },
+  //{ server: false, }
 )
+
+
+// アイテム削除
+const deleteError = ref<Error>()
+async function deleteItem(confirm: boolean, params: {id: number}) {
+  if (!confirm) {
+    return
+  }
+  const { data , error: deleteError } = await useAsyncData<any>(
+    "deleteItem",
+    () => {
+      return $fetch(`//localhost:8018/api/v1/items/${params.id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${useAuth().getToken()}`,
+        },
+      })
+    }
+  )
+  if (! data.value || deleteError.value) {
+    return
+  }
+  refreshItems()
+}
 
 </script>

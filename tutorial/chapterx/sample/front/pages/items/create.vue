@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-alert v-if="loginError" dismissible type="error">{{ loginError }}</v-alert>
+    <v-alert v-if="createError" dismissible type="error">{{ createError }}</v-alert>
     <div class="mb-3">
       <div class="text-h4">Create item</div>
     </div>
@@ -31,9 +31,13 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  middleware: ["auth"]
+})
+
 const title = ref<string>("")
 const content = ref<string>("")
-const loginError = ref<Error | null>(null)
+const createError = ref<Error>()
 
 interface Item {
   id: number
@@ -42,7 +46,7 @@ interface Item {
 }
 
 async function submit(event: Event) {
-  const { data: item, pending, error, refresh } = await useAsyncData<Item>(
+  const { data: item, pending, error: createError, refresh } = await useAsyncData<Item>(
     "createItem",
     () => {
       return $fetch("//localhost:8018/api/v1/items/", {
@@ -57,8 +61,7 @@ async function submit(event: Event) {
       })
     }
   )
-  if (! item.value || error.value) {
-    loginError.value = error.value
+  if (! item.value || createError.value) {
     return
   }
   useRouter().push("/items/")

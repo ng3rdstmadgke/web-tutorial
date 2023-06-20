@@ -1,47 +1,26 @@
 <template>
-  <div>
+  <div >
     <v-alert v-if="getError" dismissible type="error">{{ getError }}</v-alert>
     <v-alert v-if="deleteError" dismissible type="error">{{ deleteError }}</v-alert>
     <div class="mb-3">
-      <div class="text-h4">Items</div>
+      <div class="text-h4">Item (id={{ item.id }})</div>
     </div>
-    <div class="d-flex justify-end">
+    <div class="d-flex justify-end mb-3">
       <div class="mr-3">
-        <v-btn :icon="mdiRefresh" @click="refreshItems"></v-btn>
+        <v-btn :icon="mdiNoteEditOutline" color="warning" link :to="`/items/${item.id}/edit`"></v-btn>
       </div>
       <div>
-        <v-btn color="primary" :icon="mdiPlusBoxMultipleOutline" link to="/items/create"></v-btn>
+        <v-btn :icon="mdiDeleteForeverOutline" color="error" @click="confirmDeletion.open({id: item.id})"></v-btn>
       </div>
     </div>
-    <v-table>
-      <thead>
-        <tr>
-          <th>id</th>
-          <th>title</th>
-          <th>action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="item in items" :key="item.id">
-          <td><NuxtLink :to="`/items/${item.id}`">{{ item.id }}</NuxtLink></td>
-          <td>{{ item.title }}</td>
-          <td>
-            <div class="d-flex">
-              <div>
-                <v-btn icon flat link :to="`/items/${item.id}/create`">
-                  <v-icon color="warning" :icon="mdiNoteEditOutline"></v-icon>
-                </v-btn>
-              </div>
-              <div>
-                <v-btn icon flat @click="confirmDeletion.open({id: item.id})">
-                  <v-icon color="error" :icon="mdiDeleteForeverOutline"></v-icon>
-                </v-btn>
-              </div>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </v-table>
+    <v-card >
+      <v-card-title>
+        {{ item.title }}
+      </v-card-title>
+      <v-card-text>
+        {{ item.content }}
+      </v-card-text>
+    </v-card>
     <ConfirmDialog
       title="アイテムの削除"
       message="本当に削除しますか"
@@ -56,19 +35,20 @@
 </template>
 
 <script setup lang="ts">
-// 明示的なインポートは不要だが、IDEの補完を効かせるために記述している
-import { ref } from 'vue'
 import { mdiPlusBoxMultipleOutline, mdiNoteEditOutline, mdiDeleteForeverOutline, mdiRefresh } from '@mdi/js'
 
 definePageMeta({
   middleware: ["auth"]
 })
 
+// パスパラメータを取得
+const {itemId} = useRoute().params
 
 // テンプレートのref属性に指定した値を変数名としてrefオブジェクトを作成すると、テンプレートへの参照が作成される
 // この参照を利用できるのは、テンプレートの描画が完了した後になる (onMountedないしはonUpdatedで利用)
 // Template Refs: https://vuejs.org/guide/essentials/template-refs.html#accessing-the-refs
 const confirmDeletion = ref<any>(null)  // ConfirmDialogコンポーネントのref
+
 
 interface Item {
   id: number
@@ -76,12 +56,12 @@ interface Item {
   content: string
 }
 
-// アイテム一覧取得
-const { data: items, pending, error: getError, refresh: refreshItems } = await useAsyncData<Item[]>(
-  "getItems",
+// アイテム取得
+const { data: item, pending, error: getError, refresh } = await useAsyncData<Item>(
+  "getItem",
   () => {
     // サーバーサイドレンダリング時のURLは "http://" を付けないといけない
-    return $fetch("http://localhost:8018/api/v1/items/", {
+    return $fetch(`http://localhost:8018/api/v1/items/${itemId}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${useAuth().getToken()}`,
@@ -112,7 +92,7 @@ async function deleteItem(confirm: boolean, params: {id: number}) {
   if (! data.value || deleteError.value) {
     return
   }
-  refreshItems()
+  useRouter().push({path: "/items/"})
 }
 
 </script>

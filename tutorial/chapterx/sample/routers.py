@@ -180,6 +180,18 @@ def get_list(
     items = session.query(Item).filter(Item.user_id == current_user.id).offset(skip).limit(limit).all()
     return items
 
+# アイテムの取得
+@router.get("/items/{item_id}", response_model=ItemResponseSchema)
+def read_user(
+    item_id: int,
+    session: Session = Depends(get_session),
+    _: User = Depends(auth.get_current_user([PermissionType.ITEM_READ]))
+):
+    item = session.query(Item).filter(Item.id == item_id).first()
+    if item is None:
+        raise HTTPException(status_code=404, detail=f"Item is not found. (id={item_id})")
+    return item
+
 
 # アイテムの更新
 @router.put("/items/{item_id}", response_model=ItemResponseSchema)

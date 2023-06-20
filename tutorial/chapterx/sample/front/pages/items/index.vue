@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-alert v-if="getError" dismissible type="error">{{ getError }}</v-alert>
-    <v-alert v-if="deleteError" dismissible type="error">{{ deleteError }}</v-alert>
+    <v-alert v-model="deleteError" closable dismissible type="error">{{ deleteError }}</v-alert>
     <div class="mb-3">
       <div class="text-h4">Items</div>
     </div>
@@ -28,7 +28,7 @@
           <td>
             <div class="d-flex">
               <div>
-                <v-btn icon flat link :to="`/items/${item.id}/create`">
+                <v-btn icon flat link :to="`/items/${item.id}/edit`">
                   <v-icon color="warning" :icon="mdiNoteEditOutline"></v-icon>
                 </v-btn>
               </div>
@@ -70,6 +70,9 @@ definePageMeta({
 // Template Refs: https://vuejs.org/guide/essentials/template-refs.html#accessing-the-refs
 const confirmDeletion = ref<any>(null)  // ConfirmDialogコンポーネントのref
 
+// アイテム削除時のエラー
+const deleteError = ref<Error | null>(null)
+
 interface Item {
   id: number
   title: string
@@ -93,12 +96,11 @@ const { data: items, pending, error: getError, refresh: refreshItems } = await u
 
 
 // アイテム削除
-const deleteError = ref<Error>()
 async function deleteItem(confirm: boolean, params: {id: number}) {
   if (!confirm) {
     return
   }
-  const { data , error: deleteError } = await useAsyncData<any>(
+  const { data , error } = await useAsyncData<any>(
     "deleteItem",
     () => {
       return $fetch(`//localhost:8018/api/v1/items/${params.id}`, {
@@ -109,7 +111,8 @@ async function deleteItem(confirm: boolean, params: {id: number}) {
       })
     }
   )
-  if (! data.value || deleteError.value) {
+  if (error.value instanceof Error) {
+    deleteError.value = error.value
     return
   }
   refreshItems()

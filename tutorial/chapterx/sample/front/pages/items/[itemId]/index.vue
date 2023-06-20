@@ -1,7 +1,7 @@
 <template>
   <div >
     <v-alert v-if="getError" dismissible type="error">{{ getError }}</v-alert>
-    <v-alert v-if="deleteError" dismissible type="error">{{ deleteError }}</v-alert>
+    <v-alert v-model="deleteError" closable dismissible type="error">{{ deleteError }}</v-alert>
     <div class="mb-3">
       <div class="text-h4">Item (id={{ item.id }})</div>
     </div>
@@ -49,6 +49,9 @@ const {itemId} = useRoute().params
 // Template Refs: https://vuejs.org/guide/essentials/template-refs.html#accessing-the-refs
 const confirmDeletion = ref<any>(null)  // ConfirmDialogコンポーネントのref
 
+// アイテム削除時のエラー
+const deleteError = ref<Error | null>(null)
+
 
 interface Item {
   id: number
@@ -68,17 +71,15 @@ const { data: item, pending, error: getError, refresh } = await useAsyncData<Ite
       },
     })
   },
-  //{ server: false, }
 )
 
 
 // アイテム削除
-const deleteError = ref<Error>()
 async function deleteItem(confirm: boolean, params: {id: number}) {
   if (!confirm) {
     return
   }
-  const { data , error: deleteError } = await useAsyncData<any>(
+  const { data , error } = await useAsyncData<any>(
     "deleteItem",
     () => {
       return $fetch(`//localhost:8018/api/v1/items/${params.id}`, {
@@ -89,7 +90,8 @@ async function deleteItem(confirm: boolean, params: {id: number}) {
       })
     }
   )
-  if (! data.value || deleteError.value) {
+  if (error.value instanceof Error) {
+    deleteError.value = error.value
     return
   }
   useRouter().push({path: "/items/"})

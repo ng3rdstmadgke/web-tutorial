@@ -31,6 +31,8 @@
 </template>
 
 <script setup lang="ts">
+import { useItemApi } from '@/composables/itemApi';
+
 definePageMeta({
   middleware: ["auth"]
 })
@@ -45,22 +47,12 @@ interface Item {
   content: string
 }
 
+// アイテム作成
 async function submit(event: Event) {
-  const { data: item, pending, error, refresh } = await useAsyncData<Item>(
-    "createItem",
-    () => {
-      return $fetch("//localhost:8018/api/v1/items/", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${useAuth().getToken()}`,
-        },
-        body: JSON.stringify({
-          title: title.value,
-          content: content.value,
-        }),
-      })
-    }
-  )
+  const { data: item, pending, error, refresh } = await useItemApi().create({
+    title: title.value,
+    content: content.value,
+  })
   if (error.value instanceof Error) {
     createAlert.value.alert("error", error.value)
     console.error(error.value)

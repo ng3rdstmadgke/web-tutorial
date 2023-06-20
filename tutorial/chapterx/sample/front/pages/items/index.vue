@@ -58,6 +58,7 @@
 // 明示的なインポートは不要だが、IDEの補完を効かせるために記述している
 import { ref } from 'vue'
 import { mdiPlusBoxMultipleOutline, mdiNoteEditOutline, mdiDeleteForeverOutline, mdiRefresh } from '@mdi/js'
+import {useItemApi} from '@/composables/itemApi'
 
 definePageMeta({
   middleware: ["auth"]
@@ -77,37 +78,14 @@ interface Item {
 }
 
 // アイテム一覧取得
-const { data: items, pending, error, refresh: refreshItems } = await useAsyncData<Item[]>(
-  "getItems",
-  () => {
-    // サーバーサイドレンダリング時のURLは "http://" を付けないといけない
-    return $fetch("http://localhost:8018/api/v1/items/", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${useAuth().getToken()}`,
-      },
-    })
-  },
-  //{ server: false, }
-)
-
+const { data: items, pending, error, refresh: refreshItems } = await useItemApi().getAll()
 
 // アイテム削除
 async function deleteItem(confirm: boolean, params: {id: number}) {
   if (!confirm) {
     return
   }
-  const { data , error } = await useAsyncData<any>(
-    "deleteItem",
-    () => {
-      return $fetch(`//localhost:8018/api/v1/items/${params.id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${useAuth().getToken()}`,
-        },
-      })
-    }
-  )
+  const { error } = await useItemApi().delete(params.id)
   if (error.value instanceof Error) {
     deleteAlert.value.alert("error", error.value)
     console.error(error.value)
@@ -115,5 +93,4 @@ async function deleteItem(confirm: boolean, params: {id: number}) {
   }
   refreshItems()
 }
-
 </script>

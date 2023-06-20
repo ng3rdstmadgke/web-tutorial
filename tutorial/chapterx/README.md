@@ -334,3 +334,75 @@ const links = ref<Array<[any, string]>>([
 ])
 </script>
 ```
+
+# ■ メモ
+
+## serverとclientの判定
+
+```
+process.client
+```
+
+## カスタムコンポーネント
+
+```
+defineEmits, defineProps, defineExpose
+```
+
+
+## 画面遷移
+
+```ts
+useRouter().push({path: "/"})
+```
+
+## $fetch
+
+- $fetch: https://nuxt.com/docs/api/utils/dollarfetch#fetch
+- ofetch: https://github.com/unjs/ofetch
+
+Nuxtは `ofetch` を `$fetch` としてグローバルに公開している.
+
+## useRuntimeConfig
+
+コンフィグの定義
+
+```ts
+/* --- nuxt.config.ts --- */
+
+export default defineNuxtConfig({
+  runtimeConfig: {
+    // Private keys are only available on the server
+    apiSecret: '123',
+
+    // Public keys that are exposed to the client
+    public: {
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || '/api'
+    }
+  }
+})
+```
+
+使い方
+
+```ts
+<script setup lang="ts">
+const config = useRuntimeConfig()
+</script>
+```
+
+## apiコンポーザブル
+
+```ts
+/* --- nuxt.config.ts --- */
+export default defineNuxtConfig({
+  // 実行時参照したいグローバルな変数を定義
+  runtimeConfig: {
+    // public配下はサーバーとクライアント両方で使える
+    public: {
+      clientBaseUrl: process.env.NUXT_CLIENT_BASE_URL || '//localhost:8018/api/v1',
+      serverBaseUrl: process.env.NUXT_SERVER_BASE_URL || 'http://localhost:8018/api/v1',
+    }
+  }
+})
+```

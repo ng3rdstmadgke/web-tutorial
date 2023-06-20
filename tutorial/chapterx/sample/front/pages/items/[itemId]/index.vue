@@ -35,6 +35,7 @@
 
 <script setup lang="ts">
 import { mdiPlusBoxMultipleOutline, mdiNoteEditOutline, mdiDeleteForeverOutline, mdiRefresh } from '@mdi/js'
+import { useItemApi } from '@/composables/itemApi';
 
 definePageMeta({
   middleware: ["auth"]
@@ -57,18 +58,7 @@ interface Item {
 }
 
 // アイテム取得
-const { data: item, pending, error, refresh } = await useAsyncData<Item>(
-  "getItem",
-  () => {
-    // サーバーサイドレンダリング時のURLは "http://" を付けないといけない
-    return $fetch(`http://localhost:8018/api/v1/items/${itemId}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${useAuth().getToken()}`,
-      },
-    })
-  },
-)
+const { data: item, pending, error, refresh } = await useItemApi().get(itemId)
 
 
 // アイテム削除
@@ -76,17 +66,7 @@ async function deleteItem(confirm: boolean, params: {id: number}) {
   if (!confirm) {
     return
   }
-  const { data , error } = await useAsyncData<any>(
-    "deleteItem",
-    () => {
-      return $fetch(`//localhost:8018/api/v1/items/${params.id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${useAuth().getToken()}`,
-        },
-      })
-    }
-  )
+  const { error } = await useItemApi().delete(params.id)
   if (error.value instanceof Error) {
     deleteAlert.value.alert("error", error.value)
     console.error(error.value)

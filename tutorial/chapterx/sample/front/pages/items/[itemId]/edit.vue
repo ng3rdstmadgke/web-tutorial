@@ -31,6 +31,8 @@
 </template>
 
 <script setup lang="ts">
+import { useItemApi } from '@/composables/itemApi';
+
 definePageMeta({
   middleware: ["auth"]
 })
@@ -48,32 +50,11 @@ const updateAlert = ref<any>(null)  // Alertコンポーネントのref
 
 
 // アイテム取得
-const { data: item, pending, error: getError, refresh } = await useAsyncData<Item>(
-  "getItem",
-  () => {
-    // サーバーサイドレンダリング時のURLは "http://" を付けないといけない
-    return $fetch(`http://localhost:8018/api/v1/items/${itemId}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${useAuth().getToken()}`,
-      },
-    })
-  },
-)
+const { data: item, pending, error, refresh } = await useItemApi().get(itemId)
 
+// アイテム更新
 async function submit(id: number) {
-  const { data, pending, error, refresh } = await useAsyncData<Item>(
-    "updateItem",
-    () => {
-      return $fetch(`//localhost:8018/api/v1/items/${id}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${useAuth().getToken()}`,
-        },
-        body: JSON.stringify(item.value)
-      })
-    }
-  )
+  const { data, pending, error, refresh } = await useItemApi().update(item.value)
   if (error.value instanceof Error) {
     updateAlert.value.alert("error", error.value)
     console.error(error.value)

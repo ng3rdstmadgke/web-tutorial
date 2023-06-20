@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-alert v-model="updateError" closable dismissible type="error">{{ updateError }}</v-alert>
+    <Alert ref="updateAlert"></Alert>
     <div class="mb-3">
       <div class="text-h4">Edit item (id={{ item.id }})</div>
     </div>
@@ -43,7 +43,8 @@ interface Item {
 
 // パスパラメータを取得
 const {itemId} = useRoute().params
-const updateError = ref<Error | null>(null)
+
+const updateAlert = ref<any>(null)  // Alertコンポーネントのref
 
 
 // アイテム取得
@@ -74,7 +75,8 @@ async function submit(id: number) {
     }
   )
   if (error.value instanceof Error) {
-    updateError.value = error.value
+    updateAlert.value.alert("error", error.value)
+    console.error(error.value)
     return
   }
   useRouter().push("/items/")

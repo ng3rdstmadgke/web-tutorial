@@ -21,6 +21,16 @@
 </template>
 
 <script setup lang="ts">
+interface Props {
+  title: string
+  message: string
+  cancelBtn: string
+  confirmBtn: string
+  colorCancel: "primary" | "secondary" | "error" | "warning" | "info" | "success"
+  colorConfirm: "primary" | "secondary" | "error" | "warning" | "info" | "success"
+}
+
+
 // ダイアログの表示・非表示のコントロール
 const dialog = ref<boolean>(false)
 // 親コンポーネントから受け取るパラメータ
@@ -37,16 +47,6 @@ function confirm(confirm: boolean) {
   dialog.value = false
   emit("confirm", confirm, parameters)
 }
-
-interface Props {
-  title: string
-  message: string
-  cancelBtn: string
-  confirmBtn: string
-  colorCancel: "primary" | "secondary" | "error" | "warning" | "info" | "success"
-  colorConfirm: "primary" | "secondary" | "error" | "warning" | "info" | "success"
-}
-
 
 // propsはdefinePropsで定義する。デフォルト値はwithDefaultsで定義する。
 // defineProps: https://vuejs.org/api/sfc-script-setup.html#defineprops-defineemits

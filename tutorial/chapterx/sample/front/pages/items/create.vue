@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-alert v-model="createError" closable dismissible type="error">{{ createError }}</v-alert>
+    <Alert ref="createAlert" />
     <div class="mb-3">
       <div class="text-h4">Create item</div>
     </div>
@@ -37,7 +37,7 @@ definePageMeta({
 
 const title = ref<string>("")
 const content = ref<string>("")
-const createError = ref<Error | null>(null)
+const createAlert = ref<any>(null)  // Alertコンポーネントのref
 
 interface Item {
   id: number
@@ -62,7 +62,8 @@ async function submit(event: Event) {
     }
   )
   if (error.value instanceof Error) {
-    createError.value = error.value
+    createAlert.value.alert("error", error.value)
+    console.error(error.value)
     return
   }
   useRouter().push("/items/")

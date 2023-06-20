@@ -1,7 +1,6 @@
 <template>
   <div>
-    <v-alert v-if="getError" dismissible type="error">{{ getError }}</v-alert>
-    <v-alert v-model="deleteError" closable dismissible type="error">{{ deleteError }}</v-alert>
+    <Alert ref="deleteAlert" />
     <div class="mb-3">
       <div class="text-h4">Items</div>
     </div>
@@ -69,9 +68,7 @@ definePageMeta({
 // この参照を利用できるのは、テンプレートの描画が完了した後になる (onMountedないしはonUpdatedで利用)
 // Template Refs: https://vuejs.org/guide/essentials/template-refs.html#accessing-the-refs
 const confirmDeletion = ref<any>(null)  // ConfirmDialogコンポーネントのref
-
-// アイテム削除時のエラー
-const deleteError = ref<Error | null>(null)
+const deleteAlert = ref<any>(null)  // Alertコンポーネントのref
 
 interface Item {
   id: number
@@ -80,7 +77,7 @@ interface Item {
 }
 
 // アイテム一覧取得
-const { data: items, pending, error: getError, refresh: refreshItems } = await useAsyncData<Item[]>(
+const { data: items, pending, error, refresh: refreshItems } = await useAsyncData<Item[]>(
   "getItems",
   () => {
     // サーバーサイドレンダリング時のURLは "http://" を付けないといけない
@@ -112,7 +109,8 @@ async function deleteItem(confirm: boolean, params: {id: number}) {
     }
   )
   if (error.value instanceof Error) {
-    deleteError.value = error.value
+    deleteAlert.value.alert("error", error.value)
+    console.error(error.value)
     return
   }
   refreshItems()

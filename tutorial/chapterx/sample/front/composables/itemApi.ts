@@ -21,7 +21,7 @@ export const useItemApi = () => {
     async create(item: ItemCreate) {
       return useApi().post<Item>("createItem", "/items/", item)
     },
-    async update(item: ItemCreate) {
+    async update(item: Item) {
       return useApi().put<Item>("updateItem", `/items/${item.id}`, item)
     },
     async delete(id: number) {

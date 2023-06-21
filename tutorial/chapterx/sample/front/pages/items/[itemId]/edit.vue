@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Alert ref="updateAlert"></Alert>
+    <Alert ref="alert"></Alert>
     <div class="mb-3">
       <div class="text-h4">Edit item (id={{ item.id }})</div>
     </div>
@@ -46,7 +46,7 @@ interface Item {
 // パスパラメータを取得
 const {itemId} = useRoute().params
 
-const updateAlert = ref<any>(null)  // Alertコンポーネントのref
+const alert = ref<any>(null)  // Alertコンポーネントのref
 
 
 // アイテム取得
@@ -56,7 +56,7 @@ const { data: item, pending, error, refresh } = await useItemApi().get(itemId)
 async function submit(id: number) {
   const { data, pending, error, refresh } = await useItemApi().update(item.value)
   if (error.value instanceof Error) {
-    updateAlert.value.alert("error", error.value)
+    alert.value.error(error.value)
     console.error(error.value)
     return
   }

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Alert ref="deleteAlert" />
+    <Alert ref="alert" />
     <div class="mb-3">
       <div class="text-h4">Items</div>
     </div>
@@ -69,7 +69,7 @@ definePageMeta({
 // この参照を利用できるのは、テンプレートの描画が完了した後になる (onMountedないしはonUpdatedで利用)
 // Template Refs: https://vuejs.org/guide/essentials/template-refs.html#accessing-the-refs
 const confirmDeletion = ref<any>(null)  // ConfirmDialogコンポーネントのref
-const deleteAlert = ref<any>(null)  // Alertコンポーネントのref
+const alert = ref<any>(null)  // Alertコンポーネントのref
 
 interface Item {
   id: number
@@ -78,7 +78,16 @@ interface Item {
 }
 
 // アイテム一覧取得
-const { data: items, pending, error, refresh: refreshItems } = await useItemApi().getAll()
+const { data: items, pending, error: getItemsError, refresh: refreshItems } = await useItemApi().getAll()
+
+// アイテム一覧の取得に失敗した場合のエラー処理
+onMounted(() => {
+  if (getItemsError.value instanceof Error) {
+    alert.value.error(getItemsError.value)
+    console.error(getItemsError.value)
+    return
+  }
+})
 
 // アイテム削除
 async function deleteItem(confirm: boolean, params: {id: number}) {
@@ -87,7 +96,7 @@ async function deleteItem(confirm: boolean, params: {id: number}) {
   }
   const { error } = await useItemApi().delete(params.id)
   if (error.value instanceof Error) {
-    deleteAlert.value.alert("error", error.value)
+    alert.value.error(error.value)
     console.error(error.value)
     return
   }

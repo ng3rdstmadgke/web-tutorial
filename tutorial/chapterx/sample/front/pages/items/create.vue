@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Alert ref="createAlert" />
+    <Alert ref="alert" />
     <div class="mb-3">
       <div class="text-h4">Create item</div>
     </div>
@@ -39,7 +39,7 @@ definePageMeta({
 
 const title = ref<string>("")
 const content = ref<string>("")
-const createAlert = ref<any>(null)  // Alertコンポーネントのref
+const alert = ref<any>(null)  // Alertコンポーネントのref
 
 interface Item {
   id: number
@@ -54,7 +54,7 @@ async function submit(event: Event) {
     content: content.value,
   })
   if (error.value instanceof Error) {
-    createAlert.value.alert("error", error.value)
+    alert.value.error(error.value)
     console.error(error.value)
     return
   }

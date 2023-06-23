@@ -71,12 +71,6 @@ definePageMeta({
 const confirmDeletion = ref<any>(null)  // ConfirmDialogコンポーネントのref
 const alert = ref<any>(null)  // Alertコンポーネントのref
 
-interface Item {
-  id: number
-  title: string
-  content: string
-}
-
 // アイテム一覧取得
 const { data: items, pending, error: getItemsError, refresh: refreshItems } = await useItemApi().getAll()
 

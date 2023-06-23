@@ -37,20 +37,22 @@ definePageMeta({
   middleware: ["auth"]
 })
 
-interface Item {
-  id: number
-  title: string
-  content: string
-}
-
 // パスパラメータを取得
 const {itemId} = useRoute().params
 
 const alert = ref<any>(null)  // Alertコンポーネントのref
 
-
 // アイテム取得
-const { data: item, pending, error, refresh } = await useItemApi().get(itemId)
+const { data: item, pending, error: getItemError, refresh } = await useItemApi().get(itemId)
+
+// アイテムの取得に失敗した場合のエラー処理
+onMounted(() => {
+  if (getItemError.value instanceof Error) {
+    alert.value.error(getItemError.value)
+    console.error(getItemError.value)
+    return
+  }
+})
 
 // アイテム更新
 async function submit(id: number) {

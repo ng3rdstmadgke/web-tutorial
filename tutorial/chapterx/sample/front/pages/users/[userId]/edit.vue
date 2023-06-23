@@ -1,0 +1,97 @@
+<template>
+  <div>
+    <Alert ref="alert" />
+    <div class="mb-3">
+      <div class="text-h4">Create user</div>
+    </div>
+    <v-sheet class="mx-auto">
+      <v-form @submit.prevent="submit">
+        <v-text-field
+          v-model="user.username"
+          variant="outlined"
+          label="username"
+          dense
+          readonly
+          ></v-text-field>
+        <v-text-field
+          v-model="password"
+          variant="outlined"
+          label="password"
+          type="password"
+          clearable
+          dense
+        ></v-text-field>
+        <v-text-field
+          v-model="user.age"
+          variant="outlined"
+          label="age"
+          type="number"
+          clearable
+          dense
+        ></v-text-field>
+        <v-select
+          v-model="role_ids"
+          variant="outlined"
+          label="roles"
+          :items="[{id: 1, name: 'SYSTEM_ADMIN'}, {id: 2, name: 'LOCATION_ADMIN'}, {id: 3, name: 'LOCATION_OERATOR'}]"
+          item-title="name"
+          item-value="id"
+          clearable
+          multiple
+          dense
+        ></v-select>
+        <v-btn
+          color="primary"
+          type="submit"
+        >作成</v-btn>
+      </v-form>
+    </v-sheet>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { useUserApi } from '@/composables/userApi';
+
+definePageMeta({
+  middleware: ["auth"]
+})
+
+// パスパラメータを取得
+const {userId} = useRoute().params
+
+const password = ref<string>("")
+const age = ref<number>(0)
+const role_ids = ref<number[]>([])
+const alert = ref<any>(null)  // Alertコンポーネントのref
+
+// ユーザー取得
+const { data: user, pending, error: getUserError, refresh } = await useUserApi().get(userId)
+if (user.value) {
+  age.value = user.value.age
+  role_ids.value = user.value.roles.map((role: any) => role.id)
+}
+
+onMounted(() => {
+  if (getUserError.value instanceof Error) {
+    alert.value.error(getUserError.value)
+    console.error(getUserError.value)
+    return
+  }
+})
+
+// ユーザー更新
+async function submit() {
+  const { data, pending, error, refresh } = await useUserApi().update({
+    id: user.value!.id,
+    password: password.value,
+    age: user.value!.age,
+    role_ids: role_ids.value,
+  })
+  if (error.value instanceof Error) {
+    alert.value.error(error.value)
+    console.error(error.value)
+    return
+  }
+  useRouter().push("/users/")
+}
+</script>

@@ -1,6 +1,6 @@
 <template>
 <div>
-  <v-alert v-if="loginError" dismissible type="error">{{ loginError }}</v-alert>
+  <Alert ref="alert" />
   <!--
     https://vuetifyjs.com/ja/components/forms/#submit-26-clear3067306e30d030ea30c730fc30b730e730f3
 
@@ -47,12 +47,12 @@
 
 const username = ref<string>("")
 const password = ref<string>("")
-const loginError = ref<Error | null>(null)
 
 interface LoginResponse {
   access_token: string
   token_type: string
 }
+const alert = ref<any>(null)  // Alertコンポーネントのref
 
 async function submit() {
   const { data, pending, error, refresh } = await useAsyncData<LoginResponse>(
@@ -72,7 +72,7 @@ async function submit() {
     }
   )
   if (! data.value || error.value) {
-    loginError.value = error.value
+    alert.value.error(error.value)
     return
   }
   useAuth().login(data.value.access_token)

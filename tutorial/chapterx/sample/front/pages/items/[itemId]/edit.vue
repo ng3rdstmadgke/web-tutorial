@@ -2,21 +2,23 @@
   <div>
     <Alert ref="alert"></Alert>
     <div class="mb-3">
-      <div class="text-h4">Edit item (id={{ item.id }})</div>
+      <div class="text-h4">Edit item (id={{ item!.id }})</div>
     </div>
     <v-sheet class="mx-auto">
-      <v-form @submit.prevent="submit(item.id)">
+      <v-form ref="form" @submit.prevent="submit(item!.id)">
         <v-text-field
-          v-model="item.title"
+          v-model="item!.title"
           variant="outlined"
           label="title"
+          :rules="[rules.required, rules.maxLength(100)]"
           clearable
           dense
           ></v-text-field>
         <v-textarea
-          v-model="item.content"
+          v-model="item!.content"
           variant="outlined"
           label="content"
+          :rules="[rules.required, rules.maxLength(200)]"
           clearable
           dense
         ></v-textarea>
@@ -41,6 +43,8 @@ definePageMeta({
 const {itemId} = useRoute().params
 
 const alert = ref<any>(null)  // Alertコンポーネントのref
+const form = ref<any>(null)   // v-formのref
+const rules = useRules()
 
 // アイテム取得
 const { data: item, pending, error: getItemError, refresh } = await useItemApi().get(itemId)
@@ -56,6 +60,11 @@ onMounted(() => {
 
 // アイテム更新
 async function submit(id: number) {
+  const {valid, errors} = await form.value.validate()
+  if (!valid) {
+    return
+  }
+
   const { data, pending, error, refresh } = await useItemApi().update(item.value)
   if (error.value instanceof Error) {
     alert.value.error(error.value)

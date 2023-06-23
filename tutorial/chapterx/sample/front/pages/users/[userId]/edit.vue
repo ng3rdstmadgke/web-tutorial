@@ -5,11 +5,12 @@
       <div class="text-h4">Create user</div>
     </div>
     <v-sheet class="mx-auto">
-      <v-form @submit.prevent="submit">
+      <v-form ref="form" @submit.prevent="submit">
         <v-text-field
-          v-model="user.username"
+          v-model="user!.username"
           variant="outlined"
           label="username"
+          :rules="[rules.required, rules.maxLength(100)]"
           dense
           readonly
           ></v-text-field>
@@ -17,14 +18,16 @@
           v-model="password"
           variant="outlined"
           label="password"
+          :rules="[rules.required, rules.minLength(8), rules.maxLength(100)]"
           type="password"
           clearable
           dense
         ></v-text-field>
         <v-text-field
-          v-model="user.age"
+          v-model="user!.age"
           variant="outlined"
           label="age"
+          :rules="[rules.required, rules.max(150)]"
           type="number"
           clearable
           dense
@@ -63,6 +66,8 @@ const password = ref<string>("")
 const age = ref<number>(0)
 const role_ids = ref<number[]>([])
 const alert = ref<any>(null)  // Alertコンポーネントのref
+const form = ref<any>(null)   // v-formのref
+const rules = useRules()
 
 // ユーザー取得
 const { data: user, pending, error: getUserError, refresh } = await useUserApi().get(userId)
@@ -81,6 +86,10 @@ onMounted(() => {
 
 // ユーザー更新
 async function submit() {
+  const {valid, errors} = await form.value.validate()
+  if (!valid) {
+    return
+  }
   const { data, pending, error, refresh } = await useUserApi().update({
     id: user.value!.id,
     password: password.value,

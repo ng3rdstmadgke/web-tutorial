@@ -406,3 +406,39 @@ export default defineNuxtConfig({
   }
 })
 ```
+
+## バリデーション
+
+https://vuetifyjs.com/en/components/forms/#exposed-properties
+
+```vue
+<template>
+  <v-form ref="form" @submit.prevent="submit">
+    <v-text-field
+      v-model="title"
+      label="title"
+      :rules="[v => !!v || 'title is required']"
+      ></v-text-field>
+    <v-btn color="primary" type="submit" >作成</v-btn>
+  </v-form>
+</template>
+
+
+<script setup lang="ts">
+
+const title = ref<string>("")
+
+const form = ref<any>(null)   // v-formのref
+
+async function submit(event: Event) {
+  // バリデーション実行
+  const {valid, errors} = await form.value.validate()
+  // バリデーションの表示をリセットしたいときは form.value.resetValidation()
+  // 入力値とバリデーション表示両方をリセットしたいときは form.value.reset()
+  if (!valid) {
+    return
+  }
+  // ... APIリクエスト ...
+}
+</script>
+```

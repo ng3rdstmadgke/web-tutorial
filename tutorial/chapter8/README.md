@@ -92,13 +92,13 @@ console.log(add(1, 1))
 # .ts を .js にトランスパイル (ビルド)
 # --outDir <PATH>
 #   ビルドしたファイルをを配置するディレクトリ
-npx tsc hello.ts --outDir dist
+npx tsc hello.ts --outDir tmp
 
-# ビルドを行うと dist/hello.js が生成されます。
-cat dist/hello.js
+# ビルドを行うと tmp/hello.js が生成されます。
+cat tmp/hello.js
 
 # 実行
-node dist/hello.js
+node tmp/hello.js
 ```
 
 次はビルドしたファイルをhtmlから読み込んでみましょう
@@ -115,11 +115,15 @@ node dist/hello.js
 </head>
 <body>
   <h1>Hello World</h1>
-  <script src="/ts_tutorial/dist/hello.js"></script>
+
+  <!-- hello.ts -->
+  <script src="/ts_tutorial/tmp/hello.js"></script>
   <script>
     let v = add(100, 200)
     console.log("v: ", v)
   </script>
+  <!-- hello.ts -->
+
 </body>
 </html>
 ```
@@ -977,7 +981,6 @@ console.log(Util.getVersion());
 ビルドして実行してみましょう  
 
 ```bash
-rm -r dist/*
 # src/app.ts と src/lib/module.ts をビルド
 npx tsc src/app.ts src/lib/*.ts --outDir dist
 
@@ -985,28 +988,23 @@ npx tsc src/app.ts src/lib/*.ts --outDir dist
 node dist/app.js
 ```
 
-# ■ webpackでバンドル
+# ■ ビルド
 
-## tsconfig.jsonの作成
+## tsconfig.jsonを利用する
 
-TypeScriptのビルド時の設定を記述する `tsconfig.json` というファイルを作成します。  
+これまでは `tsc` コマンドを利用して、引数やオプションでビルド対象のファイルや出力先などを指定してきましたが、毎回ビルド時に細かいオプションを指定するのは手間なので、 `tsconfig.json` を利用してTypeScriptのビルド設定を定義しましょう。  
 `tsconfig.json` にはビルド先のディレクトリや、トランスパイル後のJavaScriptのバージョン、どんなファイルをビルドに含めるかといった設定を記述します。
 
+```
+※ JavaScriptのバージョン
 TypeScriptはJavaScriptにトランスパイルすることで、node.jsやブラウザから実行できますが、JavaScriptにもバージョンが存在します。  
 ブラウザによって対応状況が異なるので、どのバージョンのJavaScriptにトランスパイルするかといった設定が必要になります。  
 
-ちなみに、JavaScriptの標準仕様は [ECMAScript](https://www.w3schools.com/js/js_versions.asp) という名前で定められており、下記のようなバージョンが存在します。  
+ちなみに、JavaScriptの標準仕様は ECMAScript という名前で定められており、下記のようなバージョンが存在します。  
+ECMAScript: https://www.w3schools.com/js/js_versions.asp
 
-- es5
-- es6(es2015)
-- es2016
-- es2017
-- es2018
-- es2019
-- es2020
-- es2021
-
-
+es5, es6(es2015), es2016, es2017, es2018, es2019, es2020, es2021
+```
 
 ```bash
 # 最初に作成したTypeScriptのプロジェクトに移動
@@ -1050,7 +1048,12 @@ tsconfig.jsonの設定の参考
     // trueにすると厳密な型チェックを行う
     "strict": true,
     // 相対モジュール名を解決するためのベースディレクトリ
-    "baseUrl": "src"
+    "baseUrl": "src",
+    // コンパイル対象にJavaScriptファイルを含める
+    "allowJs": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
   },
   // コンパイル対象のファイルを定義
   // 拡張子を指定していない場合は .ts, .tsx, .d.ts が含まれる
@@ -1066,20 +1069,106 @@ tsconfig.jsonの設定の参考
 # ビルドの設定はtsconfig.jsonを参照するため、引数を指定する必要はない
 npx tsc
 
+# 確認
+ls dist/
+
 # 実行
 node dist/app.js
 ```
 
-
-
-※ ここでビルドしたソースコードはnode.jsでしか実行できません。
-ブラウザで実行する場合、バンドラー(ビルドしたコードを一つにまとめるライブラリ)が必要になります。
+## webpackの設定
 
 参考
+- [webpack - GettingStarted](https://webpack.js.org/guides/getting-started/)
+- [webpack - TypeScript](https://webpack.js.org/guides/typescript/)
 
-- [webpack - basic setup](https://webpack.js.org/guides/typescript/#basic-setup)
+
+`tsconfig.json` を利用することで、ビルドコマンドはだいぶシンプルになりましたが、 `tsc` を利用したビルド方法では、tsファイルに対応するjsファイルが複数生成されてしまいます。  
+サーバーで動かすのであれば問題ありませんが、ブラウザで動かそうとすると依存ファイルをすべて読み込まなければならず、現実的ではありません。  
+webpackを利用すると、ビルド後のファイルを1ファイルにまとめる(バンドル)ことができるため、ブラウザ側で簡単に読み込むことができるようになります。
+
+
 
 ```bash
-npm install ts-loader --save-dev
-npx tsc --init
+# 最初に作成したTypeScriptのプロジェクトに移動
+cd /opt/app/static/ts_tutorial
+
+# webpackとwebpackでTypeScriptを解釈するためのts-loaderをインストールします。
+npm install webpack-cli ts-loader --save-dev
 ```
+
+webpackの設定を定義する `webpack.config.js` を作成します。
+
+```js
+// --- static/ts_tutorial/webpack.config.js ---
+const path = require('path');
+
+module.exports = {
+  // エントリーポイント
+  entry: './src/app.ts',
+  module: {
+    rules: [
+      {
+        test: /\.tsx?$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
+      },
+    ],
+  },
+  resolve: {
+    extensions: ['.tsx', '.ts', '.js'],
+  },
+  output: {
+    // 出力ファイル名
+    filename: 'bundle.js',
+    path: path.resolve(__dirname, 'dist'),
+  },
+};
+```
+
+ビルドを実行しましょう
+
+
+```bash
+# ビルド実行
+npx webpack
+
+# 確認
+ls dist/bundle.js
+
+# サーバーサイドで実行
+node dist/bundle.js
+```
+
+bundle.jsをhtmlから読み込んでみましょう
+
+```html
+<!-- --- static/index.html --- -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <h1>Hello World</h1>
+
+  <!-- hello.ts -->
+  <script src="/ts_tutorial/tmp/hello.js"></script>
+  <script>
+    let v = add(100, 200)
+    console.log("v: ", v)
+  </script>
+  <!-- hello.ts -->
+
+  <!--bundle.js -->
+  <script src="/ts_tutorial/dist/bundle.js"></script>
+  <!--bundle.js -->
+
+</body>
+</html>
+```
+
+http://localhost:8018/ にアクセスしてみましょう

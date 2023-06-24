@@ -155,7 +155,7 @@ def login_for_access_token(
 
 # アイテムの新規作成
 @router.post("/items/", response_model=ItemResponseSchema)
-async def create(
+def create(
     # request form and files: https://fastapi.tiangolo.com/tutorial/request-forms-and-files/
     data: ItemPostSchema,
     session: Session = Depends(get_session),
@@ -182,7 +182,7 @@ def get_list(
 
 # アイテムの取得
 @router.get("/items/{item_id}", response_model=ItemResponseSchema)
-def read_user(
+def get_item(
     item_id: int,
     session: Session = Depends(get_session),
     _: User = Depends(auth.get_current_user([PermissionType.ITEM_READ]))
@@ -195,7 +195,7 @@ def read_user(
 
 # アイテムの更新
 @router.put("/items/{item_id}", response_model=ItemResponseSchema)
-async def update(
+def update(
     item_id: int,
     data: ItemPostSchema,
     session: Session = Depends(get_session),

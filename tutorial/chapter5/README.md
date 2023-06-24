@@ -26,7 +26,21 @@ MYSQL_PWD=$DB_PASSWORD mysql -u $DB_USER -h $DB_HOST -P $DB_PORT -e "CREATE DATA
 
 # マイグレーション
 alembic upgrade head
+
+exit
 ```
+
+# ■ アプリの起動
+
+アプリを起動して、ブラウザで確認しながら実装していきましょう
+
+```bash
+# アプリを起動
+./bin/run.sh chapter5 --mode app
+```
+
+http://127.0.0.1:8018/docs にブラウザでアクセス
+
 
 
 # ■ ログインが必要なAPIを実装してみましょう
@@ -164,6 +178,26 @@ def get_list(
     items = session.query(Item).filter(Item.user_id == current_user.id).offset(skip).limit(limit).all()
     return items
 
+```
+
+## アイテムの取得
+
+指定したidのアイテムを取得するAPIを実装します。
+
+```python
+# --- routers.py ---
+
+# アイテムの取得
+@router.get("/items/{item_id}", response_model=ItemResponseSchema)
+def get_item(
+    item_id: int,
+    session: Session = Depends(get_session),
+    _: User = Depends(auth.get_current_user([PermissionType.ITEM_READ]))
+):
+    item = session.query(Item).filter(Item.id == item_id).first()
+    if item is None:
+        raise HTTPException(status_code=404, detail=f"Item is not found. (id={item_id})")
+    return item
 ```
 
 
@@ -597,11 +631,6 @@ python manage.py create-user loc_operator -r LOCATION_OPERATOR
 
 # ユーザーの削除 (参考)
 python manage.py delete-user xxxxxxx
-```
 
-## ブラウザで確認してみましょう
-
-```bash
-# アプリを起動
-./bin/run.sh chapter5 --mode app
+exit
 ```

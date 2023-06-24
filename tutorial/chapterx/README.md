@@ -2,6 +2,7 @@
 --
 [top](../../README.md)
 
+
 # Note
 このドキュメントでは `bin` 配下のコマンド以外は `tutorial/chapterx/src` をルートディレクトリとして解説します。
 
@@ -9,6 +10,13 @@
 - https://codybontecou.com/how-to-use-vuetify-with-nuxt-3.html
 - https://zenn.dev/coedo/articles/nuxt3-vuetify3
 - https://qiita.com/ot_RikuOta/items/bd644957dacbac057a05
+
+# ■ 前提
+
+このチュートリアルを開始する前に、Vue.jsのチュートリアルを完了させてください
+
+[Vue.js チュートリアル](https://ja.vuejs.org/tutorial/#step-1)
+
 
 # ■ プロジェクト作成
 

@@ -29,6 +29,18 @@ MYSQL_PWD=$DB_PASSWORD mysql -u $DB_USER -h $DB_HOST -P $DB_PORT -e "CREATE DATA
 alembic upgrade head
 ```
 
+# ■ アプリの起動
+
+アプリを起動して、ブラウザで確認しながら実装していきましょう
+
+```bash
+# アプリを起動
+./bin/run.sh chapter4 --mode app
+```
+
+http://127.0.0.1:8018/docs にブラウザでアクセス
+
+
 # ■ pydantic を使ってみましょう
 
 FastAPIで欠かせないライブラリが `pydantic` です。ここでは `pydantic` のメリットや実際にどのように利用するのかを学習しましょう。
@@ -509,12 +521,3 @@ def login_for_access_token(
     access_token = jwt.encode(payload, env.token_secret_key, algorithm=env.token_algorithm)
     return {"access_token": access_token, "token_type": "bearer"}
 ```
-
-## ブラウザで確認してみましょう
-
-```bash
-# アプリを起動
-./bin/run.sh chapter4 --mode app
-```
-
-http://127.0.0.1:8018/docs にブラウザでアクセスしてみましょう。

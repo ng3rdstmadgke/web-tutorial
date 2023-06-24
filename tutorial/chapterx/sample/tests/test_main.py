@@ -133,12 +133,29 @@ def test_item_post(client):
     )
     assert response.status_code == 200
 
-def test_item_get(client):
+def test_item_getAll(client):
     token = fetch_token(client, "sys_admin", "password")
     response = client.get(
         "/api/v1/items/",
         headers={"Authorization": f"Bearer {token}"},
         params={"skip": 0, "limit": 10},
+    )
+    assert response.status_code == 200
+
+def test_item_get(client):
+    token = fetch_token(client, "sys_admin", "password")
+    response = client.post(
+        "/api/v1/items/",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "title": "タイトル",
+            "content": "本文",
+        }
+    )
+    id = response.json()["id"]
+    response = client.get(
+        f"/api/v1/items/{id}",
+        headers={"Authorization": f"Bearer {token}"},
     )
     assert response.status_code == 200
 

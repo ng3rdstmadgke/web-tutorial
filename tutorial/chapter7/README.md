@@ -217,6 +217,30 @@ for (let [index, fruit] of Object.entries(fruits)) {
 }
 ```
 
+### forEach
+
+[Array.prototype.forEach()](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach)
+
+forEachを利用した配列のループ
+
+```js
+let a = ["a", "b", "c"];
+a.forEach((e, i) => {
+  console.log(`elem=${e}, index=${i}`)
+})
+
+```
+
+forEachを利用したオブジェクトのループ
+
+```js
+let o = {apple: 100, banana: 120, cherry: 300};
+Object.entries(o)
+  .forEach(([k, v]) => {
+    console.log(`key=${k}, value=${v}`)
+  })
+```
+
 
 ## break, continue
 
@@ -957,6 +981,8 @@ window.addEventListener("storage", function(e) {
     console.log(e.url); // 発生元ページ
 }, false);
 ```
+
+# ■ 非同期
 
 # ■ そのほかよく使うもの
 

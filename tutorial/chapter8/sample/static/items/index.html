@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="/util.js"></script>
+  <title>Document</title>
+
+</head>
+<body>
+
+<div>
+  <ul>
+    <li><a href="/login.html">TOP</a></li>
+    <li><a href="/items/create.html">アイテム登録</a></li>
+  </ul>
+</div>
+
+<!-- リクエスト結果の表示エリア ここから -->
+<div id="js_result">
+</div>
+<!-- リクエスト結果の表示エリア ここまで -->
+
+<script>
+/**
+ * li要素を作成する
+ */
+function createListElem(item) {
+  let li = document.createElement("li")
+  li.setAttribute("id", item.id)
+  li.textContent = `title=${item.title} content=${item.content}`;
+  return li
+}
+
+// ページの読み込みが完了したら発火
+document.addEventListener("DOMContentLoaded", function() {
+  let result = document.getElementById("js_result");
+  fetch("/api/v1/items/", {
+    method: "GET",
+    headers: {
+      "Authorization": `Bearer ${CookieUtil.getCookie("token")}`,
+    },
+  }).then((response) => {
+    if (!response.ok) {
+      throw new Error(`アイテム一覧取得失敗 (${response.statusText})`)
+    }
+    // json() の戻り値は Promise なので、さらに then() で結果を受け取る
+    return response.json()
+  }).then((items) => {
+    // 取得したユーザー一覧でli要素を作成して、ul要素に追加
+    result.innerHTML = '';
+    for (let item of items) {
+      let li = createListElem(item);
+      result.appendChild(li);
+    }
+  }).catch((error) => {
+    result.innerHTML = '';
+    result.textContent = error.message
+    console.log(event);
+  })
+  result.textContent = "通信中...";
+
+})
+</script>
+</body>
+</html>

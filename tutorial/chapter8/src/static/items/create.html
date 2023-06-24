@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="/util.js"></script>
+  <title>Document</title>
+
+</head>
+<body>
+
+<div>
+  <ul>
+    <li><a href="/login.html">TOP</a></li>
+    <li><a href="/items/index.html">アイテム一覧</a></li>
+  </ul>
+</div>
+
+<form id="js_form">
+  <div>
+    <label ref="js_title">title</label>
+    <input id="js_title" name="title" type="text" value="" required>
+  </div>
+  <div>
+    <label ref="js_content">content</label>
+    <input id="js_content" name="content" type="text" value="" required>
+  </div>
+  <div>
+    <input type="submit" value="登録">
+  </div>
+</form>
+
+<!-- リクエスト結果の表示エリア ここから -->
+<div id="js_result">
+</div>
+<!-- リクエスト結果の表示エリア ここまで -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  document.getElementById("js_form").addEventListener("submit", function(event){
+    let result = document.getElementById("js_result");
+    let form = event.currentTarget;
+    if (!form.reportValidity()) {
+      return
+    }
+
+    // デフォルトの挙動をキャンセル
+    event.preventDefault();
+
+    fetch("/api/v1/items/", {
+      method: "POST",
+      body: JSON.stringify({
+        "title": document.getElementById("js_title").value,
+        "content": document.getElementById("js_content").value,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${CookieUtil.getCookie("token")}`,
+      },
+    }).then((response) => {
+      if (!response.ok) {
+        throw new Error(`アイテム登録失敗 (${response.statusText})`)
+      }
+      location.href = location.origin + "/items/"
+    }).catch((error) => {
+      result.textContent = error.message
+      console.log(error);
+    })
+    result.textContent = "通信中...";
+  });
+})
+</script>
+</body>
+</html>

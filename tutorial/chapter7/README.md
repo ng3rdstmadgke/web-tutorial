@@ -27,7 +27,7 @@ exit
 アプリの起動
 
 ```bash
-./bin/run.sh chapter7
+./bin/run.sh chapter7 --mode app
 ```
 
 

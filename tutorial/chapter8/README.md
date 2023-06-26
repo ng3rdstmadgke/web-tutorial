@@ -57,11 +57,8 @@ node -v
 # npmのアップデート
 sudo npm update -g npm
 
-# プロジェクト作成
-mkdir static/ts_tutorial
-cd static/ts_tutorial
-
 # プロジェクトを初期化してTypeScriptをインストール
+cd static/ts_tutorial
 npm init --y
 npm install typescript
 
@@ -116,13 +113,13 @@ node tmp/hello.js
 <body>
   <h1>Hello World</h1>
 
-  <!-- hello.ts -->
+  <!-- hello.tsの読み込み >>> -->
   <script src="/ts_tutorial/tmp/hello.js"></script>
   <script>
     let v = add(100, 200)
     console.log("v: ", v)
   </script>
-  <!-- hello.ts -->
+  <!-- <<< hello.tsの読み込み -->
 
 </body>
 </html>

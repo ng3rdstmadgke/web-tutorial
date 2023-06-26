@@ -12,6 +12,8 @@
 - [Chapter5 認証・認可が必要なAPIを実装してみよう](tutorial/chapter5/README.md)
 - [Chapter6 APIテストを実装してみよう](tutorial/chapter6/README.md)
 - [Chapter7 番外編1: JavaScriptのおさらい](tutorial/chapter7/README.md)
+- [Chapter8 番外編2: TypeScriptのおさらい](tutorial/chapter8/README.md)
+- [Chapter9 Nuxt.js入門](tutorial/chapter9/README.md)
 
 
 # TODO

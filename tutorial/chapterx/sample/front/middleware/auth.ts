@@ -11,10 +11,9 @@
  *
  * pageコンポーネント内でミドルウェアを利用する方法
  * ```
- * <script setup>
+ * <script setup lang="ts">
  * definePageMeta({
  *   middleware: ["auth"]
- *   // or middleware: 'auth'
  * })
  * </script>
  * ```

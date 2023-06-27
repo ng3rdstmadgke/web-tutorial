@@ -359,14 +359,14 @@ export default defineNuxtPlugin(nuxtApp => {
 touch layouts/default.vue
 ```
 
-利用するVuetifyのコンポーネント
-- [v-app-bar - App bars (ヘッダー) | Vuetify](https://vuetifyjs.com/en/components/app-bars/)
-- [v-navigation-drawer - Navigation drawers (サイドメニュー) | Vuetify](https://vuetifyjs.com/en/components/navigation-drawers/)
-- [v-footer - Footers (フッター) | Vuetify](https://vuetifyjs.com/en/components/footers/)
-- [v-list - List (リスト) | Vuetify](https://vuetifyjs.com/en/components/lists/)
-- [v-btn - Buttons (ボタン) | Vuetify](https://vuetifyjs.com/en/components/buttons/)
-- [v-icon - Icons (アイコン) | Vuetify](https://vuetifyjs.com/en/components/icons/)
-- [v-sheet - Sheets (枠) | Vuetify](https://vuetifyjs.com/en/components/sheets/)
+- 利用するVuetifyのコンポーネント
+  - [v-app-bar - App bars (ヘッダー) | Vuetify](https://vuetifyjs.com/en/components/app-bars/)
+  - [v-navigation-drawer - Navigation drawers (サイドメニュー) | Vuetify](https://vuetifyjs.com/en/components/navigation-drawers/)
+  - [v-footer - Footers (フッター) | Vuetify](https://vuetifyjs.com/en/components/footers/)
+  - [v-list - List (リスト) | Vuetify](https://vuetifyjs.com/en/components/lists/)
+  - [v-btn - Buttons (ボタン) | Vuetify](https://vuetifyjs.com/en/components/buttons/)
+  - [v-icon - Icons (アイコン) | Vuetify](https://vuetifyjs.com/en/components/icons/)
+  - [v-sheet - Sheets (枠) | Vuetify](https://vuetifyjs.com/en/components/sheets/)
 
 ```vue
 <!-- front/layouts/default.vue -->
@@ -484,10 +484,11 @@ http://localhost:3000/items/1/edit -> pages/items/[itemId]/edit.vue
 touch pages/index.vue
 ```
 
-- [v-table - Tables (テーブル) | Vuetify](https://vuetifyjs.com/en/components/tables/)
-- [Flex (要素を横並びにする機能) | Vuetify](https://vuetifyjs.com/en/styles/flex/)
-- [v-btn - Buttons (ボタン) | Vuetify](https://vuetifyjs.com/en/components/buttons/)
-- [v-icon - Icons (アイコン) | Vuetify](https://vuetifyjs.com/en/components/icons/)
+- 利用するVuetifyのコンポーネント
+  - [v-table - Tables (テーブル) | Vuetify](https://vuetifyjs.com/en/components/tables/)
+  - [Flex (要素を横並びにする機能) | Vuetify](https://vuetifyjs.com/en/styles/flex/)
+  - [v-btn - Buttons (ボタン) | Vuetify](https://vuetifyjs.com/en/components/buttons/)
+  - [v-icon - Icons (アイコン) | Vuetify](https://vuetifyjs.com/en/components/icons/)
 
 ```vue
 <!-- --- front/pages/index.vue --- -->

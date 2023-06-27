@@ -20,5 +20,10 @@
 # TODO
 
 - chapter7
-  - Promise
+  - Promise, async/await
   - formの扱い
+- chapter9
+  - ライフサイクル
+    https://ja.vuejs.org/guide/essentials/lifecycle.html#lifecycle-diagram
+  - SSR
+    https://nuxt.com/docs/guide/concepts/rendering

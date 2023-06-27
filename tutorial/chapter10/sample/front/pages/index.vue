@@ -36,6 +36,10 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  middleware: ["auth"]
+})
+
 // refは明示的なインポートは不要だが、説明のために記述している
 import { ref } from 'vue'
 import { mdiNoteEditOutline, mdiDeleteForeverOutline } from '@mdi/js'

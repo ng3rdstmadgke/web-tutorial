@@ -6,7 +6,7 @@
       <v-app-bar-title>
         <div @click="useRouter().push('/')" style="cursor: pointer;">SampleApp</div>
       </v-app-bar-title>
-      <v-btn :icon="mdiLogout"></v-btn>
+      <v-btn v-if="auth.authenticated()" :icon="mdiLogout" @click="logout()"></v-btn>
     </v-app-bar>
     <!-- <<< ヘッダー -->
 
@@ -22,7 +22,7 @@
       <!-- メニューリスト >>> -->
       <v-list>
         <template v-for="item in menu" :key="item.name" >
-          <v-list-item link :to="item.path">
+          <v-list-item v-if="item.authenticated === auth.authenticated()" link :to="item.path">
             <template v-slot:prepend>
               <v-icon>{{ item.icon }}</v-icon>
             </template>
@@ -57,6 +57,7 @@ interface MenuItem {
   icon: string
   name: string
   path: string
+  authenticated: boolean
 }
 
 const drawer = ref<boolean>(false)
@@ -65,18 +66,28 @@ const menu = ref<Array<MenuItem>>([
     icon: mdiLogin,
     name: "Login",
     path: "/login",
+    authenticated: false,
   },
   {
     icon: mdiNote,
     name: "Item",
     path: "/items/",
+    authenticated: true,
   },
   {
     icon: mdiAccount,
     name: "User",
     path: "/users/",
+    authenticated: true,
   },
 ])
+
+const auth = useAuth()
+
+function logout() {
+  useAuth().logout()
+  useRouter().push({path: "/login"})
+}
 </script>
 
 <style lang="scss">

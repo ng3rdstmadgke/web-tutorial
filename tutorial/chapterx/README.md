@@ -425,7 +425,7 @@ https://vuetifyjs.com/en/components/forms/#exposed-properties
     <v-text-field
       v-model="title"
       label="title"
-      :rules="[v => !!v || 'title is required']"
+      :rules="[ required ]"
       ></v-text-field>
     <v-btn color="primary" type="submit" >作成</v-btn>
   </v-form>
@@ -437,6 +437,10 @@ https://vuetifyjs.com/en/components/forms/#exposed-properties
 const title = ref<string>("")
 
 const form = ref<any>(null)   // v-formのref
+
+function required(v: string) boolean | string {
+  return !!v || 'title is required'
+}
 
 async function submit(event: Event) {
   // バリデーション実行

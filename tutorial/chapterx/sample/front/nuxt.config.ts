@@ -36,6 +36,5 @@ export default defineNuxtConfig({
       clientBaseUrl: '//localhost:8018/api/v1',
       serverBaseUrl: 'http://localhost:8018/api/v1',
     }
-
-  }
+  },
 })

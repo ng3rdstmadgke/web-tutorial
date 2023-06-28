@@ -15,7 +15,7 @@
 - [Chapter8 番外編2: TypeScriptのおさらい](tutorial/chapter8/README.md)
 - [Chapter9 Nuxt.js入門](tutorial/chapter9/README.md)
 - [Chapter10 ログインページの実装](tutorial/chapter10/README.md)
-- [Chapter11 アイテム管理ページ(CRUD)の実装](tutorial/chapter11/README.md)
+- [Chapter11 アイテム・ユーザー管理ページ(CRUD)の実装](tutorial/chapter11/README.md)
 
 
 # TODO

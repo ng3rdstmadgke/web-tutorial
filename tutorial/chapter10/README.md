@@ -603,9 +603,12 @@ class ValidationRules {
 
 `front/utils/rules.ts` を使って、ログインフォームにバリデーションを設定しましょう。
 
-1. `v-text-field` の `rule` 属性に先ほど定義したバリデーション関数を配列で渡します。
-2. `v-form` の `ref` 属性と同じ変数名で `ref<any>()` を初期化し、 `v-form` の参照オブジェクトを作成します。
-3. `v-form` の参照から `validate()` を呼び出すとバリデーションを実行できます。
+1. `v-text-field` の `rule` 属性に先ほど定義したバリデーション関数を配列で渡します。  
+2. `v-form` の `ref` 属性と同じ変数名で `ref<any>()` を初期化し、 `v-form` の参照オブジェクトを作成します。  
+  テンプレートのref属性に指定した値を変数名としてrefオブジェクトを作成すると、テンプレートへの参照が作成されます。  
+  この参照を利用できるのは、テンプレートの描画が完了した後になります。(onMountedないしはonUpdatedで利用できます)  
+  [Template Refs](https://vuejs.org/guide/essentials/template-refs.html#accessing-the-refs)
+3. `v-form` の参照から `validate()` を呼び出すとバリデーションを実行できます。  
 
 
 ```vue

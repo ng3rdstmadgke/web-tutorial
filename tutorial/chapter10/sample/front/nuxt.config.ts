@@ -28,4 +28,13 @@ export default defineNuxtConfig({
       'process.env.DEBUG': false,
     },
   },
+  // 実行時参照したいグローバルな変数を定義
+  runtimeConfig: {
+    public: {
+      // clientBaseUrl: process.env.NUXT_CLIENT_BASE_URL || '//localhost:8018/api/v1',
+      // serverBaseUrl: process.env.NUXT_SERVER_BASE_URL || 'http://localhost:8018/api/v1',
+      clientBaseUrl: '//localhost:8018/api/v1',
+      serverBaseUrl: 'http://localhost:8018/api/v1',
+    }
+  },
 })

@@ -53,22 +53,15 @@ async function submit() {
   if (!valid) {
     return
   }
-  const { data, pending, error, refresh } = await useAsyncData<LoginResponse>(
-    "login",
-    () => {
-      let form = new FormData()
-      form.append("username", username.value)
-      form.append("password", password.value)
-      return $fetch("//localhost:8018/api/v1/token", {
-        method: "POST",
-        headers: {},
-        body: form,
-      })
-    }
-  )
+
+  let form = new FormData()
+  form.append("username", username.value)
+  form.append("password", password.value)
+  const { data, pending, error, refresh } = await useApi().post<LoginResponse>("login", "/token", form)
+
   // ログイン失敗ならログを出力してreturn
   if (!data.value || error.value) {
-    alert.value.error(error.value)  // 追加: ログイン失敗時にアラートを表示
+    alert.value.error(error.value)
     console.error(error.value)
     return
   }

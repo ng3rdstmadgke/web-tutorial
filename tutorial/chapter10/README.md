@@ -201,46 +201,44 @@ definePageMeta({
 
 APIからトークンの取得を行い、Cookieにトークンを保存するログイン画面を実装してみましょう。
 
-## useAsyncData
+## # useAsyncData
 
 - [useAsyncData | Nuxt](https://nuxt.com/docs/api/composables/use-async-data)
 
 NuxtでAPIにリクエストを送信するには `useAsyncData` を利用します。  
 非同期でデータを取得するAPIなので、同期的に処理を記述したい場合は `await` を利用して実行します。
 
-```
 ■ 引数
-- key: string
+- key: `string`  
   このリクエストを一意に指定するキーを指定します。(APIへの重複アクセスを排除してくれる)
-- handler: (nuxtApp?: NuxtApp) => Promise<DataT>
+- handler: `(nuxtApp?: NuxtApp) => Promise<DataT>`  
   このハンドラーのなかでAPIへのリクエストを行います。
-- options?: AsyncDataOptions<DataT>
-  - lazy (default: false)
+- options?: `AsyncDataOptions<DataT>`  
+  - lazy (default: false)  
     クライアントサイドで呼ばれた際にデータフェッチの完了を待機せずにページ遷移を行う
-  - default
+  - default  
     データフェッチが完了するまでの間、戻り値のdataに設定する値を指定する。
-  - server (default: true)
+  - server (default: true)  
     trueならサーバーサイドでデータフェッチを実行。falseならクライアントサイドでデータフェッチを実行。
-  - transform
+  - transform  
     取得したデータの形式を変換するための関数を指定する
 
 ■ 戻り値
-- data: Ref<DataT | null>
+- data: `Ref<DataT | null>`  
   引数のhandlerの戻り値をrefでラップしたデータ。 初期値はref(null)
-- pending: Ref<boolean>
+- pending: `Ref<boolean>`  
   データフェッチが完了するまではtrue、完了したらfalse
-- refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
+- refresh: `(opts?: AsyncDataExecuteOptions) => Promise<void>`  
   リクエストをもう一度実行するための関数
-- error: Ref<ErrorT | null>
+- error: `Ref<ErrorT | null>`  
   データフェッチに失敗した場合のエラーオブジェクト
-- status: 'idle' | 'pending' | 'success' | 'error'
+- status: `'idle' | 'pending' | 'success' | 'error'`  
   データフェッチの現在の状態 (idle, pending, success, error)
-```
 
 
 
 
-## ログインページ
+## # ログインページ
 
 - 利用するVuetifyのコンポーネント
   - [v-row,v-col - Grid system](https://vuetifyjs.com/en/components/grids/#grid-system)
@@ -654,6 +652,184 @@ async function submit() {
 </script>
 ```
 
-
-
 # ■ APIアクセスの共通化
+
+ユニバーサルレンダリングを採用する場合、APIへのアクセスはサーバーサイドとクライアントサイドどちらからも行われますが、どちらから行うかで送信先のホスト指定が変わってきます。  
+※ サーバーサイドなら `localhost` 、クライアントサイドなら外部に公開されているホスト名となります。
+
+また、認証トークンの付与やパラメータのシリアライズなど、リクエスト時に必ず行う処理は以外と多く、それらをリクエスト毎に実装するのは冗長ですしメンテナンス性も低下します。
+
+ここでは、APIアクセスをより簡単に利用できるように `utils/` 配下にapiにアクセス用の共通ユーティリティを実装していきましょう。
+
+## # Runtime Config
+
+- [Exposing Runtime Config | Nuxt](https://nuxt.com/docs/guide/going-further/runtime-config)
+
+Nuxtアプリ内でグローバルに参照可能な変数を定義するにはRuntime Configを利用します。  
+Runtime Config はNuxtアプリ内で参照できる変数を定義しておける仕組みで、 `runtimeConfig` は `nuxt.config.ts` に下記のように記述します。  
+
+※ 基本的にはサーバーサイドでのみ参照可能ですが、 `public` 配下に定義した変数のみ、サーバーサイドとクライアントサイド両方で参照可能になります。
+
+```ts
+export default defineNuxtConfig({
+  runtimeConfig: {
+    // サーバーサイドでのみ参照可能
+    apiSecret: '123',
+    // public配下はサーバーサイド、クライアントサイド両方で参照可能
+    public: {
+      apiBase: '/api'
+    }
+  }
+})
+
+```
+
+`runtimeConfig` の利用には `useRuntimeConfig()` を利用します。
+
+- [useRuntimeConfig | Nuxt](https://nuxt.com/docs/api/composables/use-runtime-config)
+
+```vue
+<script setup lang="ts">
+const config = useRuntimeConfig()
+console.log(runtimeConfig.apiSecret)
+console.log(runtimeConfig.public.apiBase)
+</script>
+```
+
+## # Runtime Configにサーバーサイド・クライアントサイドそれぞれのベースURLを設定
+
+Runtime ConfigにサーバーサイドでのAPIリクエストで利用されるベースURLと、クライアントサイドで利用されるベースURLを設定しましょう。
+
+```ts
+// --- front/nuxt.config.ts ---
+
+// ... 略 ...
+
+export default defineNuxtConfig({
+  // ... 略 ...
+  // 実行時参照したいグローバルな変数を定義
+  runtimeConfig: {
+    public: {
+      clientBaseUrl: '//localhost:8018/api/v1',
+      serverBaseUrl: 'http://localhost:8018/api/v1',
+    }
+  },
+})
+```
+
+## # APIアクセスユーティリティを作成
+
+`process.client` は現在の実行環境がクライアントサイドかサーバーサイドかを判断できます。  
+
+```ts
+// --- front/utils/api.ts
+
+type HttpMethod = "GET" | "POST" | "PUT" | "DELETE"
+type QueryString = { [key: string]: string | number | boolean | string[] | number[] | boolean[] | null }
+type Headers = { [key: string]: string }
+type RequestBody = { [key: string]: any } | FormData
+
+// ユーティリティを外部から利用できるように useApi() を公開
+export const useApi = () => {
+  return Api
+}
+
+class Api {
+  // GETリクエストを送信するメソッド
+  public static async get<T>( key: string, path: string, params: QueryString = {}, headers: Headers = {}) {
+    // paramsをクエリパラメータの形式に変換する (例: {a: 1, b: 2} => "a=1&b=2")
+    let query = Object.entries(params)
+      .map(([k, v]) => {
+        if (v instanceof Array) {
+            return v.map((e) => `${k}=${encodeURIComponent(e)}`)
+        } else {
+            return `${k}=${encodeURIComponent(v ?? "")}`
+        }
+      })
+      .flat()
+      .join("&")
+    let pathWithQuery = query.length > 0 ? `${path}?${query}` : path
+    return Api.fetch<T>(key, "GET", pathWithQuery, null, headers)
+  }
+
+  // POSTリクエストを送信するメソッド
+  public static async post<T>(key: string, path: string, params: RequestBody = {}, headers: Headers = {}) {
+    let body = (params instanceof FormData) ? params : JSON.stringify(params)
+    return Api.fetch<T>(key, "POST", path, body, headers)
+  }
+
+  // PUTリクエストを送信するメソッド
+  public static async put<T>(key: string, path: string, params: RequestBody = {}, headers: Headers = {}) {
+    let body = (params instanceof FormData) ? params : JSON.stringify(params)
+    return Api.fetch<T>(key, "PUT", path, body, headers)
+  }
+
+  // DELETEリクエストを送信するメソッド
+  public static async delete<T>(key: string, path: string, params: RequestBody = {}, headers: Headers = {}) {
+    let body = (params instanceof FormData) ? params : JSON.stringify(params)
+    return Api.fetch<T>(key, "DELETE", path, body, headers)
+  }
+
+  // APIリクエストを送信するメソッド
+  private static async fetch<T>( key: string, method: HttpMethod, path: string, body: any, headers: Headers = {}) {
+    const {clientBaseUrl, serverBaseUrl} = useRuntimeConfig().public;
+    // RuntimeConfigに設定したベースURLを利用してクライアントサイドとサーバーサイドで宛先ホストを変更する
+    // process.client で現在の実行環境がクライアントサイドかサーバーサイドかを判定できる
+    const url = process.client ? `${clientBaseUrl}${path}` : `${serverBaseUrl}${path}`
+
+    // 認証トークンを付与
+    if (useAuth().authenticated()) {
+      headers.Authorization = `Bearer ${useAuth().getToken()}`
+    }
+
+    // リクエスト送信
+    return await useAsyncData<T>(
+      key,
+      () => {
+        return $fetch(url, {
+          method: method,
+          headers: headers,
+          body: body,
+        })
+      },
+    )
+
+  }
+}
+```
+## # ユーティリティを利用してログインを行う
+
+APIアクセスユーティリティを利用してトークン取得を行うよう、 `login.vue` を修正しましょう。
+
+```vue
+<!-- --- front/pages/login.vue --- -->
+
+<!-- ... 略 ... -->
+
+<script setup lang="ts">
+
+// ... 略 ...
+
+async function submit() {
+  const {valid, errors} = await loginForm.value.validate()
+  if (!valid) {
+    return
+  }
+
+  // 変更: useApiを利用してトークン取得APIにアクセスするように変更
+  let form = new FormData()
+  form.append("username", username.value)
+  form.append("password", password.value)
+  const { data, pending, error, refresh } = await useApi().post<LoginResponse>("login", "/token", form)
+  // 変更: ここまで
+
+  if (!data.value || error.value) {
+    alert.value.error(error.value)
+    console.error(error.value)
+    return
+  }
+  useAuth().login(data.value.access_token)
+  useRouter().push({ path: "/"})
+}
+</script>
+```

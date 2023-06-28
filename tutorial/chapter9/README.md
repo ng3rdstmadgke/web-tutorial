@@ -266,7 +266,7 @@ export default defineNuxtPlugin(nuxtApp => {
 下記のようにアイコンを利用できます。
 
 ```vue
-<!-- --- front/app.vue --- -->
+<!-- *** front/app.vue *** -->
 
 <template>
   <div>
@@ -491,7 +491,7 @@ touch pages/index.vue
   - [v-icon - Icons (アイコン) | Vuetify](https://vuetifyjs.com/en/components/icons/)
 
 ```vue
-<!-- --- front/pages/index.vue --- -->
+<!-- *** front/pages/index.vue *** -->
 
 <template>
   <div>

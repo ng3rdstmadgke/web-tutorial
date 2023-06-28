@@ -172,7 +172,7 @@ middlewareをページに設定するには `definePageMeta` を利用します�
 
 
 ```vue
-<!-- --- front/pages/index.vue --- -->
+<!-- *** front/pages/index.vue *** -->
 
 <template>
   <!-- ... 略 ... -->
@@ -190,7 +190,7 @@ definePageMeta({
 ついでに `front/pages/login.vue` にダミーの要素を作っておきましょう。
 
 ```vue
-<!-- --- front/pages/login.vue --- -->
+<!-- *** front/pages/login.vue *** -->
 <template>
   <div>Login Page</div>
 </template>
@@ -251,7 +251,7 @@ NuxtでAPIにリクエストを送信するには `useAsyncData` を利用しま
   - [v-icon - Icons (アイコン) | Vuetify](https://vuetifyjs.com/en/components/icons/)
 
 ```vue
-<!-- --- front/pages/login.vue --- -->
+<!-- *** front/pages/login.vue *** -->
 <template>
 <div>
   <div class="my-10">
@@ -328,7 +328,7 @@ async function submit() {
 ヘッダー右端のログアウトボタンをクリックしてログアウトできるようにしましょう。
 
 ```vue
-<!-- --- front/layouts/default.vue --- -->
+<!-- *** front/layouts/default.vue *** -->
 
 <template>
     <!-- ... 略 ... -->
@@ -366,7 +366,7 @@ function logout() {
 
 
 ```vue
-<!-- --- front/layouts/default.vue --- -->
+<!-- *** front/layouts/default.vue *** -->
 
 <template>
     <!-- ... 略 ... -->
@@ -445,7 +445,7 @@ const menu = ref<Array<MenuItem>>([
 - [defineExpose() | Vue.js](https://vuejs.org/api/sfc-script-setup.html#defineexpose) 
 
 ```vue
-<!-- --- front/components/Alert.vue --- -->
+<!-- *** front/components/Alert.vue *** -->
 <template>
   <div style="position: relative">
     <div class="hp_alert_wrapper px-3">
@@ -507,7 +507,7 @@ defineExpose({
 `front/pages/login.vue` から `front/components/Alert.vue` を利用してみましょう。  
 
 ```vue
-<!-- --- front/pages/login.vue --- -->
+<!-- *** front/pages/login.vue *** -->
 
 <template>
 <div>
@@ -609,7 +609,7 @@ class ValidationRules {
 
 
 ```vue
-<!-- --- front/pages/login.vue --- -->
+<!-- *** front/pages/login.vue *** -->
 
 <template>
   <!-- ... 略 ... -->
@@ -724,7 +724,7 @@ export default defineNuxtConfig({
 `process.client` は現在の実行環境がクライアントサイドかサーバーサイドかを判断できます。  
 
 ```ts
-// --- front/utils/api.ts
+// --- front/utils/api.ts ---
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE"
 type QueryString = { [key: string]: string | number | boolean | string[] | number[] | boolean[] | null }
@@ -804,7 +804,7 @@ class Api {
 APIアクセスユーティリティを利用してトークン取得を行うよう、 `login.vue` を修正しましょう。
 
 ```vue
-<!-- --- front/pages/login.vue --- -->
+<!-- *** front/pages/login.vue *** -->
 
 <!-- ... 略 ... -->
 

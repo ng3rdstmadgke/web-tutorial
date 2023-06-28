@@ -1,10 +1,12 @@
-[Chapter10] ログイン機能作成
+[Chapter10] ログインページの実装
 --
 [top](../../README.md)
 
 # Note
 
 このドキュメントでは `bin` 配下のコマンド以外は `tutorial/chapter10/src` をルートディレクトリとして解説します。
+
+chapter10では、Nuxtでログインページを実装します。
 
 # ■ アプリの起動
 

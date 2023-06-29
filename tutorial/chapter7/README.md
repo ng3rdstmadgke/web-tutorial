@@ -982,7 +982,310 @@ window.addEventListener("storage", function(e) {
 }, false);
 ```
 
-# ■ 非同期
+# ■ 非同期処理
+
+## # 非同期処理とは
+
+非同期処理を説明する前に、皆さんはCPU目線でIOにどのくらいの時間がかかっているか直感的に想像できますか。
+[Latency Numbers Every Programmer Should Know](https://colin-scott.github.io/personal_website/research/interactive_latency.html) を参考に少しまとめてみます。
+
+
+```
+L1キャッシュの参照: 1 ns
+
+L2キャッシュの参照: 4 ns
+
+メインメモリの参照: 100 ns
+
+SSDのランダムリード: 16,000 ns (16μs)
+
+HDDのシーク: 2,000,000 ns (2ms)
+
+httpでAPIにアクセス: 1,000,000,000 ns (1s)
+```
+
+メインメモリへのアクセスと比較すると、SSDへのアクセスには160倍、HDDへのアクセスには10,000倍もの時間がかかります。ネットワークアクセスともなれば10,000,000倍です。  
+人間には一瞬に感じられるIOも、CPUからすると非常に待ち時間が長く、クロック周波数が3GHzのCPUであれば1nsあたり、3回の命令を実行できるため、SSDのアクセス待ちでも48,000回の命令を実行できることになります。
+
+つまり、シングルスレッドで動作するプログラムにおいて、IOを待っている間に処理を進められないというのはとても非効率なのです。  
+「IOの待ち時間に処理を進めないIO」を `ブロッキングIO` 、「IOの待ち時間にほかの処理を実行できるIO」を `ノンブロッキングIO` といいます。  
+
+この、 `ノンブロッキング` こそが非同期で、非同期処理とは、待ち時間に暇を持て余したCPUに別の処理を進めさせることなのです。
+
+ここで、一つ注意してほしいのは `非同期処理` と `並列処理` は異なるということです。  
+非同期はあくまで待ち時間に他の処理を進めているだけで、同時に2つの処理を行っているわけではありません。  
+ちなみに、並列処理は同時に2つ以上の処理を同時に行うことで、並列数と同じ数のCPUコアを必要とします。
+
+## # コールバックによる非同期処理
+
+さて、非同期処理の理解ができたところで、JavaScriptで非同期処理を書いてみましょう。  
+ここで利用するのは `setTimeout()`関数で、Pythonでいうところの `sleep()` にあたります。ただし、 `setTimeout()` はノンブロッキングなので、待ち時間の間に他の処理を実行できます。
+
+- [setTimeout | MDN](https://developer.mozilla.org/ja/docs/Web/API/setTimeout)
+
+
+1秒後にメッセージを表示するスクリプトを実装します。
+
+```js
+// setTImeout(sleep後に実行する関数, sleep時間(ms))
+setTimeout(() => {
+  console.log("setTimeout finished!!")
+}, 1000)
+console.log("hello world")
+
+// 出力
+// "hello world"
+// "setTimeout finished!!"
+```
+
+今度は、setTimeoutの更に1秒後にメッセージを表示するスクリプトを実装します。
+
+```js
+setTimeout(() => {
+  console.log("1. setTimeout finished!!")
+  setTimeout(() => {
+    console.log("2. setTimeout finished!!")
+  }, 1000)
+}, 1000)
+console.log("hello world")
+
+// 出力
+// "hello world"
+// "1. setTimeout finished!!"
+// "2. setTimeout finished!!"
+```
+
+さらに一秒後にメッセージを表示する、、、
+
+```js
+setTimeout(() => {
+  console.log("1. setTimeout finished!!")
+  setTimeout(() => {
+    console.log("2. setTimeout finished!!")
+    setTimeout(() => {
+      console.log("3. setTimeout finished!!")
+    }, 1000)
+  }, 1000)
+}, 1000)
+console.log("hello world")
+
+// 出力
+// "hello world"
+// "1. setTimeout finished!!"
+// "2. setTimeout finished!!"
+// "3. setTimeout finished!!"
+```
+
+そう、コールバックによる非同期だと、非同期処理を連続して行う場合にどんどんネストが深くなってしまいます。 (コールバック地獄と呼んだりします)
+
+## # Promiseオブジェクトによる非同期処理
+
+- [Promise | MDN](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Promise)
+
+非同期処理の連結によるコールバックのネストを解決するのが `Promise` オブジェクトです。
+
+```js
+// コンストラクタ定義
+new Promise((resolve, reject) => { /* 非同期処理 */ })
+```
+
+Promiseのコンストラクタは、コールバック関数を引数にとり、この関数内に非同期処理を記述します。  
+コールバック関数は、第一引数に `resolve (処理の成功を通知するための関数)`, 第二引数に `reject(処理の失敗を通知するための関数)` を取ります
+
+setTimeoutを実行するPromiseオブジェクトを定義してみましょう。
+`sleep()` が返すPromiseオブジェクトは `setTimeout` を実行し、 `id` が1以上であれば成功、1未満であれば失敗を通知します。
+
+```js
+function sleep(id) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (id > 0) {
+        resolve(id)  // 成功を通知
+      } else {
+        reject(id)   // 失敗を通知
+      }
+    }, 1000)
+  })
+}
+```
+
+`resolve` と `reject` はそれぞれ成功と失敗を通知する関数なわけですが、その通知を受け取るのが、Promiseオブジェクトのメソッド `then` , `catch` , `finally` です。
+
+- `then(callback)`  
+`resolve()` が呼び出されたときに、引数の `callback` が実行されます。`resolve()` に渡した引数はそのまま `callback` の引数となります。  
+一般的に成功時の処理は `callback` に実装します。  
+- `catch(callback)`  
+`reject()` が呼び出されたときに、引数の `callback` が実行されます。`reject()` 渡した引数はそのまま `callback` の引数となります。  
+一般的に失敗時の処理は `callback` に実装します。  
+- `finally(callback)`  
+`resolve()` , `reject()` どちらが呼び出されても、 `callback` が実行されます。  
+`resolve` `reject` の引数は `callback` に引き継がれないので注意
+
+
+```js
+sleep(1).then((id) => { // 成功時の処理
+  console.log(`success!! (id=${id})`)
+}).catch((id) => {  // 失敗時の処理
+  console.log(`error... (id=${id})`)
+}).finally(() => {  // 成功時・失敗時共通の処理
+  console.log(`finished.`)
+})
+console.log("hello world")
+
+// 出力
+// hello world
+// success!! (id=1)
+// finished. (id=undefined)
+```
+
+```js
+sleep(-1).then((id) => {
+  console.log(`success!! (id=${id})`)
+}).catch((id) => {
+  console.log(`error... (id=${id})`)
+}).finally(() => {
+  console.log(`finished.`)
+})
+console.log("hello world")
+
+// 出力
+// hello world
+// error... (id=-1)
+// finished. (id=undefined)
+```
+
+## # 非同期処理の連結
+
+複数の非同期処理を連結するには `then` のコールバック関数で新たなPromiseオブジェクトを返します。
+
+
+```js
+sleep(1).then((id) => {
+  console.log(`success!! (id=${id})`)
+  return sleep(2)  // 新たなPromiseオブジェクトを返却して、非同期処理を連結
+}).then((id) => {
+  console.log(`success!! (id=${id})`)
+  return sleep(3)
+}).then((id) => {
+  console.log(`success!! (id=${id})`)
+})
+console.log("hello world")
+
+// 出力
+// hello world
+// success!! (id=1)
+// success!! (id=2)
+// success!! (id=3)
+```
+
+## # 複数の非同期処理を並行して実行
+
+- [Promise.all() | MDN](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Promise/all)
+
+複数の非同期処理を並行して実行するには `Promise.all()` メソッドを利用します。  
+`Promise.all()` の引数には、並行して実行したいPromiseオブジェクトの配列を渡します。
+
+```js
+Promise.all([
+  sleep(1),
+  sleep(2),
+  sleep(3),
+]).then((response) => {  // resolve() に渡した引数が配列形式でthenのコールバック関数の引数となります。
+  console.log("response: ", response)  // [1, 2, 3]
+}).catch((error) => {
+  console.log("error: ", error)
+})
+console.log("hello world")
+
+// 出力
+// hello world
+// response: [1, 2, 3]
+```
+
+ちなみに、どれか一つでもエラーになると、 `catch` のコールバック関数が実行されます。
+
+```js
+Promise.all([
+  sleep(1),
+  sleep(0),
+  sleep(-1),
+]).then((response) => {
+  console.log("response: ", response)
+}).catch((error) => { // reject() に渡した引数がcatchのコールバック関数の引数となります。
+  console.log("error: ", error)  // 0
+})
+console.log("hello world")
+
+// 出力
+// hello world
+// error: 0
+```
+
+
+## # Promiseの処理を同期的に記述する (async/await)
+
+Promiseの非同期処理は async/await構文を利用すると同期的に表現できます。
+
+functionの前に `async` を付与すると、関数は非同期関数(async function)とみなされ、戻り値をPromiseオブジェクトでラップして返すようになります。  
+戻り値がPromiseオブジェクトなので、 `then` `cache` `finally` などのメソッドをチェーンすることができます。
+
+非同期関数内では `await` 演算子が利用でき、 `await` 演算子を非同期処理(Promiseを返す処理)に付与することで、非同期処理の終了を待つことができます。(非同期関数内では終了を待ちますが、呼び出し元の処理は継続します。)  
+※ await演算子の戻り値はPromiseそのものではなく、Promiseに含まれた実際の結果値となります。
+
+
+```js
+async function main() {
+  let s1 = await sleep(1)  // await 演算子で非同期処理の終了を待ちます (呼び出し元の処理は継続)
+  console.log(`success!! (id=${s1})`)  // 戻り値 s1 はPromiseではなく値そのもの
+  let s2 = await sleep(2)
+  console.log(`success!! (id=${s2})`)
+  let s3 = await sleep(3)
+  console.log(`success!! (id=${s3})`)
+  return [s1, s2, s3]  // 非同期関数は戻り値をPromiseオブジェクトでラップした値を返します
+}
+
+main().then((ret) => {
+  console.log("ret:", ret) // ret: [1, 2, 3]
+}).catch((err) => {
+  console.log("err:", err)
+})
+
+console.log("hello")
+
+// 出力
+// hello world
+// success!! (id=1)
+// success!! (id=2)
+// success!! (id=3)
+// ret: [1, 2, 3]
+```
+
+非同期処理がどこかでエラーになった場合は `catch` のコールバック関数が実行されます。
+
+```js
+async function main() {
+  let s1 = await sleep(1)
+  console.log(`success!! (id=${s1})`)
+  let s2 = await sleep(0)
+  console.log(`success!! (id=${s2})`)
+  let s3 = await sleep(3)
+  console.log(`success!! (id=${s3})`)
+  return [s1, s2, s3]
+}
+
+main().then((ret) => {
+  console.log("ret:", ret)
+}).catch((err) => {
+  console.log("err:", err)  // err: 0
+})
+
+console.log("hello")
+
+// 出力
+// hello world
+// success!! (id=1)
+// err: 0
+```
 
 # ■ そのほかよく使うもの
 

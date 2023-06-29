@@ -528,6 +528,8 @@ JavaScriptではこのDOMをつかって、HTMLの操作を行います。
 ### `document.getElementById(id)`
 
 ```html
+<!-- static/index.html -->
+
 <ul id="target" >
     <li>apple</li>
     <li>banana</li>
@@ -551,6 +553,8 @@ JavaScriptではこのDOMをつかって、HTMLの操作を行います。
 
 
 ```html
+<!-- static/index.html -->
+
 <ul id="target" >
     <li>apple</li>
     <li>banana</li>
@@ -599,6 +603,8 @@ JavaScriptではこのDOMをつかって、HTMLの操作を行います。
 ※ セレクタ式はもともとCSSにおいて、スタイルを適用する要素を選択するためのものです。
 
 ```html
+<!-- static/index.html -->
+
 <style>
 /* id=targetの要素の配下のli要素の色を赤にする */
 #target li {
@@ -628,6 +634,8 @@ JavaScriptではこのDOMをつかって、HTMLの操作を行います。
 | childElementCount | 子要素ノードの数(=children.length) |
 
 ```html
+<!-- static/index.html -->
+
 <div>
   <ul id="target" >
       <li>apple</li>
@@ -659,6 +667,8 @@ JavaScriptではこのDOMをつかって、HTMLの操作を行います。
 テキストノードをHTMLとして扱います。
 
 ```html
+<!-- static/index.html -->
+
 <ul id="list">
     <li id="first">google</li>
     <li id="second">yahoo</li>
@@ -692,6 +702,8 @@ second.innerHTML = '<span style="color: Red;">hello</span>'; // htmlとしてセ
 <font color="red">※ class属性を取得するときは `要素ノード.className` とする必要があります</font>
 
 ```html
+<!-- static/index.html -->
+
 <form id="form">
     <input class="js_input" type="text" value="default"/>
 </form>
@@ -709,6 +721,8 @@ input.value = "set attribute";  // 入力フォームが更新される
 ※ ただし、 `getAttribute` `setAttribute` はユーザーからの入力で変更された値を受け取れないので、input要素などユーザーからの入力がある要素で利用してはいけません。
 
 ```html
+<!-- static/index.html -->
+
 <ul id="fruits">
     <li data-id="1" class="js_fruit">apple</li>
     <li data-id="2" class="js_fruit">banana</li>
@@ -733,6 +747,8 @@ JavaScriptでは画面上で行われたさまざまな操作に紐づけて処�
 イベントの発生を監視する仕組みを `イベントリスナー` と呼び、 `elem.addEventListener("イベント", 関数)` のように設定します。( `elem` で `イベント` が発生したときに `関数` が実行されます。)
 
 ```html
+<!-- static/index.html -->
+
 <input id="js_button" type="button" value="アラート表示"/>
 
 <script>
@@ -798,6 +814,8 @@ event.shiftKey : Shiftが押下されているか
 ```
 
 ```html
+<!-- static/index.html -->
+
 <form>
   <input id="js_text" type="text" value="">
 </form>
@@ -819,6 +837,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 ```html
+<!-- static/index.html -->
+
 <form id="js_form">
   <input type="text" value="">
   <input type="submit" value="送信">
@@ -853,6 +873,8 @@ Cookieとはリクエスト時にCookieヘッダに設定される小さいテ�
 cookieは `key=value` 形式で登録します
 
 ```html
+<!-- static/index.html -->
+
 <script>
 document.cookie = "name=mido";
 console.log(document.cookie);  // name=mido
@@ -878,6 +900,8 @@ cookieの残存期間を秒数で指定します。
 GMT形式の日付を指定します。GMT形式への変換は、toUTCString関数で行うことができます。
 
 ```html
+<!-- static/index.html -->
+
 <script>
 // cookieの残存期間を0にすることで削除
 document.cookie = "name=; max-age=0";
@@ -893,6 +917,8 @@ document.cookie = "name=; expires=" + date.toUTCString();
 JavaScript自体にはいい感じCookieをパースして、辞書のようにアクセスできるAPIが実装されていないので自作します。
 
 ```html
+<!-- static/index.html -->
+
 <script>
 function getCookie(key) {
   let obj = Object.fromEntries(
@@ -1343,6 +1369,8 @@ alert("エラーが発生しました！")
 OKをクリックすると `true` 、 キャンセルをクリックすると `false` を返します。
 
 ```html
+<!-- static/index.html -->
+
 <input id="btn" type="button" value="確認">
 
 <script>
@@ -1550,6 +1578,7 @@ window.CookieUtil = {
 
 ```html
 <!-- static/login.html -->
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>

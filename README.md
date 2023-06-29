@@ -20,9 +20,6 @@
 
 # TODO
 
-- chapter7
-  - Promise, async/await
-  - formの扱い
 - chapter9
   - ライフサイクル
     https://ja.vuejs.org/guide/essentials/lifecycle.html#lifecycle-diagram

@@ -1287,6 +1287,47 @@ console.log("hello")
 // err: 0
 ```
 
+## # XMLHttpRequestを使ってAPIに非同期でアクセスする関数を実装してみる
+
+- [XMLHttpRequest](https://developer.mozilla.org/ja/docs/Web/API/XMLHttpRequest)
+
+XMLHttpRequest(XHR)とは、JavaScriptでのAPIアクセスに昔から使われてきたオブジェクトです。  
+昨今では [fetch()](https://developer.mozilla.org/ja/docs/Web/API/fetch)を利用する野が主流ですが、ここはあえて理解のために、原始的なXHRを利用して、 トークン取得APIに非同期でアクセスする関数を実装してみましょう。
+
+```js
+function fetchToken(username, password) {
+  return new Promise((resolve, reject) => {
+    let xhr = new XMLHttpRequest();
+    // xhrではステータスが変わるたびにこの関数が呼び出される。
+    // xhr.readyState
+    //   0: 初期化, 1: open呼び出し済, 2: send呼び出し済, 3: 一部の応答を取得, 4: すべての応答を取得
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === 4) {  // 4 = すべての応答データを取得済み
+        if (xhr.status === 200) {
+          resolve(xhr)
+        } else {
+          reject(xhr)
+        }
+      }
+    }
+    xhr.open( "POST", "http://localhost:8018/api/v1/token")
+    let form = new FormData()
+    form.append("username", username)
+    form.append("password", password)
+    // リクエスト送信
+    xhr.send(form)
+  })
+}
+
+fetchToken("sys_admin", "admin").then((xhr) => {
+  console.log("success:", JSON.parse(xhr.responseText))
+}).catch((xhr) => {
+  console.log("error:", JSON.parse(xhr.responseText))
+})
+```
+
+
+
 # ■ そのほかよく使うもの
 
 ## アラート
@@ -1361,6 +1402,8 @@ let obj = JSON.parse(json);
 ```
 
 # ■ リクエストの送信
+
+- [fetch() | MDN](https://developer.mozilla.org/ja/docs/Web/API/fetch)
 
 APIにリクエストを送信するには `fetch()` を利用します。
 

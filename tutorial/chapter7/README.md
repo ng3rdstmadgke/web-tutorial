@@ -1194,6 +1194,8 @@ sleep(1).then((id) => {
   return sleep(3)
 }).then((id) => {
   console.log(`success!! (id=${id})`)
+}).catch((id) => {
+  console.log(`error... (id=${id})`)
 })
 console.log("hello world")
 
@@ -1299,13 +1301,17 @@ async function main() {
   return [s1, s2, s3]
 }
 
+main()
+console.log("hello")
+
+// 非同期関数はPromiseを返すので then, catch をチェーンさせることができる
 main().then((ret) => {
   console.log("ret:", ret)
 }).catch((err) => {
   console.log("err:", err)  // err: 0
 })
-
 console.log("hello")
+
 
 // 出力
 // hello world
@@ -1681,6 +1687,12 @@ document.addEventListener("DOMContentLoaded", function() {
 <!-- リクエスト結果の表示エリア ここまで -->
 
 <script>
+// 認証できてなければログイン画面へ
+let token = CookieUtil.getCookie("token")
+if (!token) {
+  location.href = "http://localhost:8018/login.html"
+}
+
 /**
  * li要素を作成する
  */
@@ -1767,6 +1779,12 @@ document.addEventListener("DOMContentLoaded", function() {
 </div>
 <!-- リクエスト結果の表示エリア ここまで -->
 <script>
+// 認証できてなければログイン画面へ
+let token = CookieUtil.getCookie("token")
+if (!token) {
+  location.href = "http://localhost:8018/login.html"
+}
+
 document.addEventListener("DOMContentLoaded", function() {
   document.getElementById("js_form").addEventListener("submit", function(event){
     let result = document.getElementById("js_result");

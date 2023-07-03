@@ -24,7 +24,7 @@ Vuetifyは公式がPlayGroundを用意していますので、挙動を確かめ
 
 ```bash
 # 開発用shellを起動
-./bin/run.sh chapter9 --mode shell --sample
+./bin/run.sh chapter9 --mode shell
 
 # Nuxt3のプロジェクトを作成
 mkdir front

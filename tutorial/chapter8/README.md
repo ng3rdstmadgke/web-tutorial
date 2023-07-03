@@ -291,7 +291,7 @@ function getScene(s: Season) {
   console.log(s);
 }
 
-getScene('sprint'); // OK
+getScene('spring'); // OK
 getScene('fall'); // エラー
 ```
 

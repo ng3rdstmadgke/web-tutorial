@@ -465,7 +465,6 @@ async function submit(id: number) {
 - [defineExpose() | Vue.js](https://vuejs.org/api/sfc-script-setup.html#defineexpose)  
 コンポーネント内のプロパティに外部からアクセスしたい場合は `defineExpose` でプロパティを公開します。
 - [defineProps() | Vue.js](https://ja.vuejs.org/api/sfc-script-setup.html#defineprops-defineemits)  
-  
 コンポーネントの呼び出し時に属性としてしていするプロパティを定義します。  
 `withDefaults(defineProps(), {...})` とすることでデフォルト値を定義できます。
 - [defineEmits() | Vue.js](https://ja.vuejs.org/api/sfc-script-setup.html#defineprops-defineemits)  

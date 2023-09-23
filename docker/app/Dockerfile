@@ -1,4 +1,4 @@
-FROM python:3.8.12-slim-bullseye
+FROM python:3.10-slim-bookworm
 
 ARG http_proxy
 ARG https_proxy
@@ -10,8 +10,8 @@ ENV http_proxy=$http_proxy
 ENV https_proxy=$https_proxy
 ENV NO_PROXY=$no_proxy
 
-RUN apt update && \
-    apt install -y locales curl default-mysql-client jq unzip groff less vim fzf net-tools iputils-ping sudo tmux gcc
+RUN apt-get update && \
+    apt-get install -y locales curl default-mysql-client jq unzip groff less vim fzf net-tools iputils-ping sudo tmux gcc
 
 # ロケール設定
 RUN echo 'ja_JP.UTF-8 UTF-8' >> /etc/locale.gen && \
@@ -34,8 +34,18 @@ RUN pip install --upgrade pip && \
 # supervisorインストール
 RUN pip install supervisor
 
-# install nodejs
-RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && apt-get install -y nodejs
+# nodejs v18.x インストール
+# https://github.com/nodesource/distributions#installation-instructions
+RUN apt-get update && \
+    apt-get install -y ca-certificates curl gnupg && \
+    mkdir -p /etc/apt/keyrings && \
+    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
+    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x nodistro main" > /etc/apt/sources.list.d/nodesource.list && \
+    apt-get update && \
+    apt-get install nodejs -y
+
+# npm v10.x インストール
+RUN npm install -g npm@^10.0.0
 
 # pnpm install
 #USER app

@@ -48,13 +48,13 @@ GROUP_ID=$(id -g)
 args=()
 while [ "$#" != 0 ]; do
   case $1 in
-    -h | --help      ) usage;;
-    -u | --uid    ) shift; USER_ID=$1 ;;
-    -g | --gid    ) shift; GROUP_ID=$1 ;;
-    --sample         ) IS_SAMPLE=1;;
-    -m | --mode           ) shift; MODE="$1";;
-    -* | --*         ) echo "$1 : 不正なオプションです" >&2; exit 1;;
-    *                ) args+=("$1");;
+    -h | --help ) usage;;
+    -u | --uid  ) shift; USER_ID=$1 ;;
+    -g | --gid  ) shift; GROUP_ID=$1 ;;
+    --sample    ) IS_SAMPLE=1 ;;
+    -m | --mode ) shift; MODE="$1" ;;
+    -* | --*    ) echo "$1 : 不正なオプションです" >&2; exit 1 ;;
+    *           ) args+=("$1") ;;
   esac
   shift
 done
@@ -85,7 +85,7 @@ docker build \
   --build-arg host_gid=$GROUP_ID \
   --rm \
   -f docker/app/Dockerfile \
-  -t fastapi-tutorial:latest \
+  -t web-tutorial:latest \
   .
 
 # Docker run
@@ -98,19 +98,29 @@ fi
 if [ "$MODE" = "shell" ]; then
   CMD="/bin/bash"
 elif [ "$MODE" = "jupyter" ]; then
-  CMD="jupyter lab --ip=* --no-browser --notebook-dir /opt/app/"
+  CMD="jupyter lab --ip=* --port 8892 --no-browser --notebook-dir /opt/app/"
+  OPTIONS="-p 8892:8892"
 else
   CMD="supervisord -c /etc/supervisor/supervisord.conf"
+  OPTIONS="-p 8018:8018 -p 3000:3000 -p 24678:24678"
 fi
 echo $CMD
+
+NETWORK_NAME="br-web-tutorial"
+NETWORK_EXISTS="$(docker network inspect $NETWORK_NAME >/dev/null 2>&1; echo $?)"
+if [ "$NETWORK_EXISTS" = 1 ]; then
+  docker network create --driver bridge --subnet "10.29.10.0/24" $NETWORK_NAME
+fi
+
 docker run \
+  $OPTIONS \
   --rm \
   -ti \
-  --network host \
+  --network $NETWORK_NAME \
   --env-file "$ENV_PATH" \
   -e "DB_NAME=$(echo $CHAPTER | sed -e 's/[^a-zA-Z0-9]/_/g')" \
   --user="$USER_ID:$GROUP_ID" \
   -w /opt/app \
   -v ${LOCAL_APP_DIR}:/opt/app \
-  fastapi-tutorial:latest \
+  web-tutorial:latest \
   $CMD

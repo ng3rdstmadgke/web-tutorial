@@ -40,24 +40,31 @@ export DOCKER_BUILDKIT=1
 docker build \
   --rm \
   -f docker/mysql/Dockerfile \
-  -t fastapi-tutorial-mysql:latest \
+  -t web-tutorial-mysql:latest \
   .
 
 # docker run
-docker rm -f fastapi-tutorial-mysql
+docker rm -f web-tutorial-mysql
+
+NETWORK_NAME="br-web-tutorial"
+NETWORK_EXISTS="$(docker network inspect $NETWORK_NAME >/dev/null 2>&1; echo $?)"
+if [ "$NETWORK_EXISTS" = 1 ]; then
+  docker network create --driver bridge --subnet "10.29.10.0/24" $NETWORK_NAME
+fi
 
 docker run \
   -d \
   --rm \
-  --network host \
-  --name fastapi-tutorial-mysql \
+  --network $NETWORK_NAME \
+  --ip=10.29.10.100 \
+  --name web-tutorial-mysql \
   -e MYSQL_ROOT_PASSWORD=$DB_PASSWORD \
-  fastapi-tutorial-mysql:latest
+  web-tutorial-mysql:latest
 
 docker run \
   --rm \
-  --name fastapi-tutorial-mysql-check \
+  --name web-tutorial-mysql-check \
   --env-file "$ENV_PATH" \
-  --network host \
-  fastapi-tutorial-mysql:latest \
+  --network $NETWORK_NAME \
+  web-tutorial-mysql:latest \
   /check.sh

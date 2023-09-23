@@ -206,7 +206,7 @@ alembicの設定ファイル `alembic.ini` の `sqlalchemy.url` にDBの接続�
 ```ini
 # -- alembic.ini --
 
-sqlalchemy.url = mysql+pymysql://root:root1234@127.0.0.1:63306/chapter3?charset=utf8mb4
+sqlalchemy.url = mysql+pymysql://root:root1234@10.29.10.100:63306/chapter3?charset=utf8mb4
 ```
 
 先ほど定義したモデルクラスのメタデータをalembicに読み込ませます。  

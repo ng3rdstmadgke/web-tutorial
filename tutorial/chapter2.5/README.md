@@ -34,7 +34,7 @@ exit
 ## JupyterLab起動
 
 ```bash
-./bin/run.sh chapter2.5 --mode jupyter
+./bin/run.sh chapter2.5 --mode jupyter --sample
 ```
 
 jupyter起動時に表示されるURL( http://localhost:8889/lab?token=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx )にブラウザでアクセスしてください。

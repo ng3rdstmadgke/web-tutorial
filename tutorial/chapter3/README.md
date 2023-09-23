@@ -43,7 +43,7 @@ FastApiは `pydantic` というライブラリを利用して型をある程度�
 ```python
 # -- env.py --
 
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 class Environment(BaseSettings):
     db_user: str

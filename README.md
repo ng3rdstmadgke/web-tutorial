@@ -19,7 +19,8 @@
 
 
 # TODO
-
+- chapter1
+  - Request, Responseを利用した説明
 - chapter9
   - ライフサイクル
     https://ja.vuejs.org/guide/essentials/lifecycle.html#lifecycle-diagram

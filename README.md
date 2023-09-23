@@ -21,6 +21,11 @@
 # TODO
 - chapter1
   - Request, Responseを利用した説明
+- APIにバリデーションを追加
+  - @field_validator
+    - https://docs.pydantic.dev/latest/usage/validators/#field-validators
+  - 注釈付きバリデータ
+    - https://docs.pydantic.dev/latest/usage/validators/#annotated-validators
 - chapter9
   - ライフサイクル
     https://ja.vuejs.org/guide/essentials/lifecycle.html#lifecycle-diagram

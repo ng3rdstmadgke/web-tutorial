@@ -23,7 +23,7 @@ http://127.0.0.1:8018/docs にブラウザでアクセスしてみましょう�
 FastAPIでは、FastAPIインスタンスにルートを登録していくイメージでAPIを実装していきます。
 
 ```python
-# -- main.py --
+# -- api/main.py --
 
 from fastapi import FastAPI
 
@@ -47,7 +47,7 @@ http://127.0.0.1:8018/ にブラウザでアクセスして、動作を確認し
 次に、URLにプレースホルダ( `item_id` )が設定されていて、GETパラメータ ( `q` )を受け取るAPIを定義してみましょう。
 
 ```python
-# -- main.py --
+# -- api/main.py --
 
 # ... 略 ...
 

@@ -1,7 +1,7 @@
 import sys
 import pprint
 pprint.pprint(sys.path)
-sys.path.append("/opt/app")
+sys.path.append("/opt/app/api")
 
 import pytest
 from fastapi.testclient import TestClient

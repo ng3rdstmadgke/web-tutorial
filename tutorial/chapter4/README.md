@@ -175,7 +175,7 @@ username, password, ageをPOSTで受け取って、ユーザー作成を行うAP
 
 
 ```python
-# -- auth.py --
+# -- api/auth.py --
 from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -188,7 +188,7 @@ def hash(plain_password: str) -> str:
 FastAPIでは、 `pydantic` を利用して、リクエスト・レスポンスデータをオブジェクトとして扱います。
 
 ```python
-# -- schemas.py --
+# -- api/schemas.py --
 
 from typing import Optional, List
 from pydantic import ConfigDict, BaseModel
@@ -231,7 +231,7 @@ FastAPIはフレームワーク自体にDIの仕組みがあります。 ( [Depe
 
 
 ```python
-# -- routers.py --
+# -- api/routers.py --
 
 from typing import List
 
@@ -286,7 +286,7 @@ def create_user(
 
 
 ```python
-# -- main.py --
+# -- api/main.py --
 
 from fastapi import FastAPI
 from routers import router
@@ -304,7 +304,7 @@ app.include_router(router, prefix="/api/v1")
 取得するユーザーはユーザーIDで指定するのでパスパラメータに `user_id` を設定します。
 
 ```python
-# -- routers.py --
+# -- api/routers.py --
 
 # ユーザー取得
 @router.get("/users/{user_id}", response_model=UserResponseSchema)
@@ -328,7 +328,7 @@ def read_user(
 GETパラメータとして受け取る `skip` `limit` は `read_users` 関数の引数に定義します。
 
 ```python
-# -- routers.py --
+# -- api/routers.py --
 
 # ... 略 ...
 
@@ -350,7 +350,7 @@ def read_users(
 まずは、更新APIが受け取るパラメータの定義を `schemas.py` に実装します。
 
 ```python
-# -- schemas.py --
+# -- api/schemas.py --
 
 # ... 略 ...
 
@@ -363,7 +363,7 @@ class UserPutSchema(BaseModel):
 ユーザーの一覧はPUTメソッドでリクエストされるため、 `@router.put("/users/{user_id}", response_model=UserResponseSchema)` のようにルートを定義します。  
 
 ```python
-# -- routers.py
+# -- api/routers.py --
 
 # ... 略 ...
 
@@ -413,7 +413,7 @@ def update_user(
 ユーザーの一覧はDELETEメソッドでリクエストされるため、 `@router.delete("/users/{user_id}")` のようにルートを定義します。  
 
 ```python
-# -- routers.py
+# -- api/routers.py --
 
 # ... 略 ...
 
@@ -452,7 +452,7 @@ usernameとpasswordを受け取ってtokenを生成するAPIを実装してい�
 まず、環境変数に token_expire_minute (トークンの有効期限) , token_secret_key (トークンを暗号化する秘密鍵) , token_algorithm (トークンの暗号化方式) を追加していきます。
 
 ```python
-# -- env.py --
+# -- api/env.py --
 
 from pydantic_settings import BaseSettings
 
@@ -466,7 +466,7 @@ class Environment(BaseSettings):
 次に、 `auth.py` に入力されたパスワードとDBに登録しあるパスワードの検証をおなう関数を追加します。
 
 ```python
-# -- auth.py --
+# -- api/auth.py --
 
 # ... 略 ...
 
@@ -478,7 +478,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 最後に、トークンを取得するAPIを追加します。
 
 ```python
-# -- routers.py --
+# -- api/routers.py --
 
 # ... 略 ...
 

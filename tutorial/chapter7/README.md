@@ -37,7 +37,7 @@ JavaScriptはブラウザで動作する言語です。FastAPIからhtml, css, j
 `/opt/app/static` 配下の静的ファイルをレスポンスするルートを登録してみましょう。
 
 ```python
-# --- main.py ---
+# -- api/main.py --
 from fastapi import FastAPI
 from routers import router
 from fastapi.staticfiles import StaticFiles  # 追加
@@ -56,7 +56,7 @@ CORS(クロスオリジンリソース共有)を許可しましょう。
 参考: [オリジン間リソース共有 (CORS) | MDN](https://developer.mozilla.org/ja/docs/Web/HTTP/CORS)
 
 ```python
-# --- main.py ---
+# -- api/main.py --
 # ... 略 ...
 from fastapi.middleware.cors import CORSMiddleware  # 追加
 

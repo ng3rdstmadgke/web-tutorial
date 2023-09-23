@@ -23,6 +23,6 @@ alembic upgrade head
 
 # 初期ユーザー作成
 PASSWD="admin"
-python manage.py create-user sys_admin -r SYSTEM_ADMIN -p $PASSWD
-python manage.py create-user loc_admin -r LOCATION_ADMIN -p $PASSWD
-python manage.py create-user loc_operator -r LOCATION_OPERATOR -p $PASSWD
+python api/manage.py create-user sys_admin -r SYSTEM_ADMIN -p $PASSWD
+python api/manage.py create-user loc_admin -r LOCATION_ADMIN -p $PASSWD
+python api/manage.py create-user loc_operator -r LOCATION_OPERATOR -p $PASSWD

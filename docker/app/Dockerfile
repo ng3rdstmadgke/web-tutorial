@@ -63,7 +63,7 @@ COPY docker/app/entrypoint-front.sh /entrypoint-front.sh
 RUN chmod +x /entrypoint-*.sh
 
 # importの起点となるパスを環境変数として定義
-ENV PYTHONPATH=/opt/app
+ENV PYTHONPATH=/opt/app/api
 
 ENTRYPOINT []
 

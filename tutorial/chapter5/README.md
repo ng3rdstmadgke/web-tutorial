@@ -55,7 +55,7 @@ http://127.0.0.1:8018/docs にブラウザでアクセス
 デコードの際に秘密鍵で電子署名をチェックして、JWTに改ざんがないかをチェックします。
 
 ```python
-# -- auth.py --
+# -- api/auth.py --
 
 # ... 略 ...
 
@@ -108,7 +108,7 @@ def get_current_user(
 次に、APIのリクエスト・レスポンスの項目と型を `schemas.py` に定義します。
 
 ```python
-# -- schemas.py --
+# -- api/schemas.py --
 
 # ... 略 ...
 
@@ -127,7 +127,7 @@ class ItemPostSchema(BaseModel):
 アイテムの作成APIを実装します
 
 ```python
-# -- routers.py --
+# -- api/routers.py --
 
 # ... 略 ...
 
@@ -162,7 +162,7 @@ def create(
 アイテムの一覧表示APIを実装します
 
 ```python
-# -- routers.py --
+# -- api/routers.py --
 
 # ... 略 ...
 
@@ -184,7 +184,7 @@ def get_list(
 指定したidのアイテムを取得するAPIを実装します。
 
 ```python
-# --- routers.py ---
+# -- api/routers.py --
 
 # アイテムの取得
 @router.get("/items/{item_id}", response_model=ItemResponseSchema)
@@ -206,7 +206,7 @@ def get_item(
 更新APIのリクエストパラメータを `schemas.py` に定義します。
 
 ```python
-# -- schemas.py --
+# -- api/schemas.py --
 
 # ... 略 ...
 
@@ -218,7 +218,7 @@ class ItemPutSchema(BaseModel):
 アイテムの更新APIを実装します
 
 ```python
-# -- routers.py --
+# -- api/routers.py --
 
 # ... 略 ...
 
@@ -263,7 +263,7 @@ def update(
 アイテムの削除APIを実装します
 
 ```python
-# -- routers.py
+# -- api/routers.py --
 
 # ... 略 ...
 
@@ -324,7 +324,7 @@ http://127.0.0.1:8018/docs にブラウザでアクセスしてみましょう�
 権限の定義と、権限の有無を確認するユーティリティを実装します。
 
 ```python
-# -- permission_service.py --
+# -- api/permission_service.py --
 
 import enum
 from typing import Dict, Set, List, Callable
@@ -393,7 +393,7 @@ class PermissionService:
 引数で権限の配列を受け取り、`_get_current_user` というクロージャーを返却するメソッドに書き換えます。
 
 ```python
-# -- auth.py --
+# -- api/auth.py --
 
 # ... 略 ...
 from typing import List, Callable
@@ -443,7 +443,7 @@ def get_current_user(permissions: List[PermissionType] = []) -> Callable:
 最後にAPIの `auth.get_current_user` を `auth.get_current_user([権限名])` に書き換えていきます。
 
 ```python
-# -- routers.py --
+# -- api/routers.py --
 
 # ... 略 ...
 from permission_service import PermissionType
@@ -546,7 +546,7 @@ APIに認証・認可を実装したことで、まっさらの状態からユ�
 
 
 ```python
-# -- manage.py --
+# -- api/manage.py --
 
 import click
 
@@ -620,13 +620,13 @@ if __name__ == "__main__":
 python manage.py --help
 
 # コマンドごとのヘルプを閲覧することも可能です。
-python manage.py create-user --help
-python manage.py delete-user --help
+python api/manage.py create-user --help
+python api/manage.py delete-user --help
 
 # それぞれの権限を持つユーザーを作成
-python manage.py create-user sys_admin -r SYSTEM_ADMIN
-python manage.py create-user loc_admin -r LOCATION_ADMIN
-python manage.py create-user loc_operator -r LOCATION_OPERATOR
+python api/manage.py create-user sys_admin -r SYSTEM_ADMIN -p $PASSWD
+python api/manage.py create-user loc_admin -r LOCATION_ADMIN -p $PASSWD
+python api/manage.py create-user loc_operator -r LOCATION_OPERATOR -p $PASSWD
 
 # ユーザーの削除 (参考)
 python manage.py delete-user xxxxxxx

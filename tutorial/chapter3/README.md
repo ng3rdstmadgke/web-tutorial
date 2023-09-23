@@ -41,7 +41,7 @@ FastApiは `pydantic` というライブラリを利用して型をある程度�
 [pydanticを利用した環境変数の読み込み](https://fastapi.tiangolo.com/advanced/settings/#environment-variables)
 
 ```python
-# -- env.py --
+# -- api/env.py --
 
 from pydantic_settings import BaseSettings
 
@@ -56,7 +56,7 @@ class Environment(BaseSettings):
 次にDBのセッションを管理する、セッションファクトリーを定義します。
 
 ```python
-# -- session.py --
+# -- api/session.py --
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -81,7 +81,7 @@ def get_session():
 chapter2と同様に、users, items, roles, user_rolesテーブルに相当するモデルを定義します。
 
 ```python
-# -- model.py --
+# -- api/model.py --
 
 import enum
 from datetime import datetime
@@ -413,7 +413,7 @@ alembicはモデルの変更を検知して、現状との差分のマイグレ�
 Userモデルに `age` カラムを追加して試してみましょう。
 
 ```python
-# -- db/mode.py --
+# -- api/model.py --
 
 class User(Base):
    # ... 略 ...

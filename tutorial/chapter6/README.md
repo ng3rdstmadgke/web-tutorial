@@ -19,7 +19,7 @@ Pytestでは `fixture` を利用することで、テスト関数の前後で行
 ※ ユーザー作成APIは認証・認可が必要なので、初期ユーザーの登録は直接DBに登録する形で行います。
 
 ```python
-# -- tests/lib.py --
+# -- api/tests/lib.py --
 
 from session import get_session
 from sqlalchemy.orm import Session
@@ -65,10 +65,10 @@ def create_user(session: Session, username: str, password: str, role_type: RoleT
 
 
 ```python
-# -- tests/test_main.py --
+# -- api/tests/test_main.py --
 import sys
 import pprint
-sys.path.append("/opt/app")  # 上の階層のファイルをimportするために PYTHON_PATH に追加
+sys.path.append("/opt/app/api")  # 上の階層のファイルをimportするために PYTHON_PATH に追加
 
 import pytest
 from fastapi.testclient import TestClient
@@ -130,7 +130,7 @@ def client() -> TestClient:
 
 
 ```python
-# -- tests/lib.py --
+# -- api/tests/lib.py --
 
 # ... 略 ...
 
@@ -155,7 +155,7 @@ def fetch_token(client: TestClient, username: str, password: str) -> str:
 
 
 ```python
-# -- tests/test_main.py --
+# -- api/tests/test_main.py --
 
 # ... 略 ...
 
@@ -203,7 +203,7 @@ def test_user_create_loc_operator(client):
 残りのテストを実装しましょう。
 
 ```python
-# -- tests/test_main.py --
+# -- api/tests/test_main.py --
 
 # ... 略 ...
 
@@ -334,7 +334,7 @@ MySQLを起動し、開発用shellを起動します。
 MYSQL_PWD=$DB_PASSWORD mysql -u $DB_USER -h $DB_HOST -P $DB_PORT -e "CREATE DATABASE IF NOT EXISTS test"
 
 # テストを実行
-pytest tests
+pytest api/tests
 
 exit
 ```
@@ -358,7 +358,7 @@ MYSQL_PWD=$DB_PASSWORD mysql -u $DB_USER -h $DB_HOST -P $DB_PORT -e "DROP DATABA
 MYSQL_PWD=$DB_PASSWORD mysql -u $DB_USER -h $DB_HOST -P $DB_PORT -e "CREATE DATABASE IF NOT EXISTS test"
 
 # テストを実行
-pytest tests
+pytest api/tests
 ```
 
 テストスクリプトを実行してみましょう
@@ -407,9 +407,9 @@ alembic upgrade head
 
 # 初期ユーザー作成
 PASSWD="admin"
-python manage.py create-user sys_admin -r SYSTEM_ADMIN -p $PASSWD
-python manage.py create-user loc_admin -r LOCATION_ADMIN -p $PASSWD
-python manage.py create-user loc_operator -r LOCATION_OPERATOR -p $PASSWD
+python api/manage.py create-user sys_admin -r SYSTEM_ADMIN -p $PASSWD
+python api/manage.py create-user loc_admin -r LOCATION_ADMIN -p $PASSWD
+python api/manage.py create-user loc_operator -r LOCATION_OPERATOR -p $PASSWD
 ```
 
 スクリプトを実行してみましょう

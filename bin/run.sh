@@ -99,12 +99,17 @@ if [ "$MODE" = "shell" ]; then
   CMD="/bin/bash"
 elif [ "$MODE" = "jupyter" ]; then
   CMD="jupyter lab --ip=* --port 8892 --no-browser --notebook-dir /opt/app/"
-  OPTIONS="-p 8892:8892"
+  CONTAINER_NAME="web-tutorial-jupyter"
+  OPTIONS="-p 8892:8892 --name $CONTAINER_NAME"
 else
   CMD="supervisord -c /etc/supervisor/supervisord.conf"
-  OPTIONS="-p 8018:8018 -p 3000:3000 -p 24678:24678"
+  CONTAINER_NAME="web-tutorial-app"
+  OPTIONS="-p 8018:8018 -p 3000:3000 -p 24678:24678 --name $CONTAINER_NAME"
 fi
-echo $CMD
+
+if [ -n "$CONTAINER_NAME" ]; then
+  docker rm -f $CONTAINER_NAME
+fi
 
 NETWORK_NAME="br-web-tutorial"
 NETWORK_EXISTS="$(docker network inspect $NETWORK_NAME >/dev/null 2>&1; echo $?)"

@@ -453,6 +453,7 @@ from permission_service import PermissionType
 def create_user(
     data: UserPostSchema, 
     session: Session = Depends(get_session),
+    # get_current_userの引数にこのAPIを実行するために必要な権限の配列を指定
     _: User = Depends(auth.get_current_user([PermissionType.USER_CREATE]))  # 追加
 ):
     # ... 略 ...
@@ -501,7 +502,6 @@ def delete_user(
 def create(
     data: ItemPostSchema,
     session: Session = Depends(get_session),
-    # get_current_userの引数にこのAPIを実行するために必要な権限の配列を指定
     current_user: User = Depends(auth.get_current_user([PermissionType.ITEM_CREATE]))  # 変更
 ):
     # ... 略 ...
@@ -511,6 +511,15 @@ def create(
 def get_list(
     skip: int = 0,
     limit: int = 100,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(auth.get_current_user([PermissionType.ITEM_READ]))  # 変更
+):
+    # ... 略 ...
+
+# アイテムの取得
+@router.get("/items/{item_id}", response_model=ItemResponseSchema)
+def get_item(
+    item_id: int,
     session: Session = Depends(get_session),
     current_user: User = Depends(auth.get_current_user([PermissionType.ITEM_READ]))  # 変更
 ):
@@ -617,19 +626,19 @@ if __name__ == "__main__":
 
 ```bash
 # ヘルプを表示してみましょう
-python manage.py --help
+python api/manage.py --help
 
 # コマンドごとのヘルプを閲覧することも可能です。
 python api/manage.py create-user --help
 python api/manage.py delete-user --help
 
 # それぞれの権限を持つユーザーを作成
-python api/manage.py create-user sys_admin -r SYSTEM_ADMIN -p $PASSWD
-python api/manage.py create-user loc_admin -r LOCATION_ADMIN -p $PASSWD
-python api/manage.py create-user loc_operator -r LOCATION_OPERATOR -p $PASSWD
+python api/manage.py create-user sys_admin -r SYSTEM_ADMIN
+python api/manage.py create-user loc_admin -r LOCATION_ADMIN
+python api/manage.py create-user loc_operator -r LOCATION_OPERATOR
 
 # ユーザーの削除 (参考)
-python manage.py delete-user xxxxxxx
+python api/manage.py delete-user xxxxxxx
 
 exit
 ```

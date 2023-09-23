@@ -89,7 +89,7 @@ def create_user(session, data):
 ```python
 from datetime import datetime
 from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import ConfigDict, BaseModel
 
 
 class User(BaseModel):
@@ -122,7 +122,7 @@ FastAPIではこの `pydantic` を使って、APIが受け取る値と返す値�
 
 ```python
 from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import ConfigDict, BaseModel
 
 class User(BaseModel):
     username: str
@@ -191,14 +191,14 @@ FastAPIでは、 `pydantic` を利用して、リクエスト・レスポンス�
 # -- schemas.py --
 
 from typing import Optional, List
-from pydantic import BaseModel
+from pydantic import ConfigDict, BaseModel
 
 class RoleSchema(BaseModel):
     id: int
     name: str
 
-    class Config:
-        orm_mode = True
+    # from_attributes = True : DBのレコードをシームレスにオブジェクトに変換できる
+    model_config = ConfigDict(from_attributes=True)
 
 class UserResponseSchema(BaseModel):
     """レスポンスで返却する項目と型を定義するクラス"""
@@ -207,9 +207,7 @@ class UserResponseSchema(BaseModel):
     age: Optional[int]
     roles: List[RoleSchema]
 
-    class Config:
-        # orm_mode = True とすると、DBのレスポンスをシームレスにオブジェクトに変換できる
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class UserPostSchema(BaseModel):
     """ユーザー作成APIのリクエストとして渡されるパラメータと型を定義"""
@@ -456,7 +454,7 @@ usernameとpasswordを受け取ってtokenを生成するAPIを実装してい�
 ```python
 # -- env.py --
 
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 class Environment(BaseSettings):
     # ... 略 ...

@@ -1,12 +1,11 @@
 from typing import Optional, List
-from pydantic import BaseModel
+from pydantic import ConfigDict, BaseModel
 
 class RoleSchema(BaseModel):
     id: int
     name: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class UserResponseSchema(BaseModel):
     """レスポンスで返却する項目と型を定義するクラス"""
@@ -15,9 +14,8 @@ class UserResponseSchema(BaseModel):
     age: Optional[int]
     roles: List[RoleSchema]
 
-    class Config:
-        # orm_mode = True とすると、DBのレスポンスをシームレスにオブジェクトに変換できる
-        orm_mode = True
+    # from_attributes = True : DBのレコードをシームレスにオブジェクトに変換できる
+    model_config = ConfigDict(from_attributes=True)
 
 class UserPostSchema(BaseModel):
     """ユーザー作成APIのリクエストとして渡されるパラメータと型を定義"""
@@ -36,8 +34,7 @@ class ItemResponseSchema(BaseModel):
     title: str
     content: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ItemPostSchema(BaseModel):
     title: str

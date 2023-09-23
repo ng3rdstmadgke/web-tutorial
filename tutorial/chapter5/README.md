@@ -117,8 +117,7 @@ class ItemResponseSchema(BaseModel):
     title: str
     content: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ItemPostSchema(BaseModel):
     title: str

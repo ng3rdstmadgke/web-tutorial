@@ -1,4 +1,4 @@
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 class Environment(BaseSettings):
     """環境変数を定義する構造体。

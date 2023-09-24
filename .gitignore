@@ -12,3 +12,5 @@
 **/.nuxt
 **/.output
 **/*.log
+
+**/.DS_Store

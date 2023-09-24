@@ -23,19 +23,21 @@
 
 完成形を動かしてみましょう
 
+※ dockerを事前にインストールしておいてください
+
 
 ```bash
-# DB起動
+git clone https://github.com/ng3rdstmadgke/web-tutorial.git
+cd web-tutorial
+```
+
+ローカルデータベースの起動
+
+```bash
 ./bin/mysql.sh
 ```
 
-```bash
-# 開発shellにログイン
-./bin/run.sh chapter11 -m shell --sample
-
-# DBの初期化
-./bin/init-database.sh
-```
+データベースの初期化
 
 ```bash
 # 開発shellにログイン
@@ -48,6 +50,8 @@
 exit
 ```
 
+アプリの起動
+
 ```bash
 # アプリの起動
 ./bin/run.sh chapter11 -m shell --sample
@@ -55,7 +59,7 @@ exit
 
 アプリが起動したら http://localhost:3000/ にアクセスしてみましょう。
 
-下記。ユーザーでログイン可能です。
+下記ユーザーでログイン可能です。
 
 ```
 Username: sys_admin

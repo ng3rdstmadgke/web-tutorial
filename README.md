@@ -1,6 +1,8 @@
-# FastAPI x NuxtJS なモダンなWebアプリのチュートリアルです。
+# Webアプリ作成チュートリアル
 
-`tutorial/` 配下にチャプターごとにディレクトリが切ってあります。
+バックエンドにFastAPI、フロントエンドにNuxt3、データベースにMySQLを利用した、モダンなWebアプリのチュートリアルです。
+
+※ `tutorial/` 配下にチャプターごとにディレクトリが切ってあります。
 
 # 目次
 
@@ -16,6 +18,51 @@
 - [Chapter9 Nuxt.js入門](tutorial/chapter9/README.md)
 - [Chapter10 ログインページの実装](tutorial/chapter10/README.md)
 - [Chapter11 アイテム・ユーザー管理ページ(CRUD)の実装](tutorial/chapter11/README.md)
+
+# 完成形
+
+完成形を動かしてみましょう
+
+
+```bash
+# DB起動
+./bin/mysql.sh
+```
+
+```bash
+# 開発shellにログイン
+./bin/run.sh chapter11 -m shell --sample
+
+# DBの初期化
+./bin/init-database.sh
+```
+
+```bash
+# 開発shellにログイン
+./bin/run.sh chapter11 -m shell --sample
+
+# DBの初期化
+./bin/init-database.sh
+
+# 開発shellからログアウト
+exit
+```
+
+```bash
+# アプリの起動
+./bin/run.sh chapter11 -m shell --sample
+```
+
+アプリが起動したら http://localhost:3000/ にアクセスしてみましょう。
+
+下記。ユーザーでログイン可能です。
+
+```
+Username: sys_admin
+Password: admin
+```
+
+![](docs/img/img_01.png)
 
 
 # TODO

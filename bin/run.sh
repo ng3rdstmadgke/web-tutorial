@@ -10,10 +10,6 @@ cat >&2 <<EOS
 [options]
  -h | --help:
    ヘルプを表示
- -u | --uid <USER_ID>:
-   ユーザーidを指定
- -g | --gid <GROUP_ID>:
-   グループidを指定
  --sample:
    サンプルコードで起動
  -m | --mode <MODE>:
@@ -43,14 +39,10 @@ cd "$PROJECT_ROOT"
 ENV_PATH="${PROJECT_ROOT}/local.env"
 IS_SAMPLE=
 MODE="app"
-USER_ID=$(id -u)
-GROUP_ID=$(id -g)
 args=()
 while [ "$#" != 0 ]; do
   case $1 in
     -h | --help ) usage;;
-    -u | --uid  ) shift; USER_ID=$1 ;;
-    -g | --gid  ) shift; GROUP_ID=$1 ;;
     --sample    ) IS_SAMPLE=1 ;;
     -m | --mode ) shift; MODE="$1" ;;
     -* | --*    ) echo "$1 : 不正なオプションです" >&2; exit 1 ;;
@@ -71,6 +63,13 @@ fi
 if [ "$MODE" != "app" -a "$MODE" != "shell" -a $MODE != "jupyter" ]; then
   echo "--mode には app, shell, jupyterのいずれかを指定してください" >&2
   exit 1
+fi
+
+USER_ID=$(id -u)
+GROUP_ID=$(id -g)
+if [ "$(uname)" = "Darwin" -o "$USER_ID" -lt 1000 -o "$GROUP_ID" -lt 1000 ]; then
+  USER_ID=1000
+  GROUP_ID=1000
 fi
 
 export $(cat $ENV_PATH | grep -v -e "^ *#")

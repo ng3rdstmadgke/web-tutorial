@@ -70,8 +70,6 @@ Password: admin
 
 
 # TODO
-- chapter1
-  - Request, Responseを利用した説明
 - APIにバリデーションを追加
   - @field_validator
     - https://docs.pydantic.dev/latest/usage/validators/#field-validators

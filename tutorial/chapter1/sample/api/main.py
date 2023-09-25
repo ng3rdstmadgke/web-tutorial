@@ -1,24 +1,26 @@
-import json
-from typing import Optional
-from pprint import pprint
-
 from fastapi import FastAPI, Request, Response, HTTPException
-from fastapi.responses import RedirectResponse, JSONResponse
-from pydantic import BaseModel
 
 app = FastAPI()
-ITEMS = {
-    1: {"id": 1, "name": "Apple" , "price": 100},
-    2: {"id": 2, "name": "Banene", "price": 200},
-    3: {"id": 3, "name": "Orange", "price": 150},
-}
+###########################################
+# Sample
+###########################################
+@app.get("/users/{user_id}")
+def sample(
+    user_id: int,  # パスパラメータ
+    q: str = ""    # クエリパラメータ
+):
+    return {"user_id": user_id, "q": q}
+
 
 ###########################################
 # Request, Response オブジェクト
 #   - Request: https://www.starlette.io/requests/
 #   - Response: https://www.starlette.io/responses/
 ###########################################
-@app.get("/info/", tags=["Info"])
+import json
+
+# GETメソッド
+@app.get("/info/{id}", tags=["Info"])
 async def info_get(request: Request):
     body = {
         "url": str(request.url),
@@ -30,15 +32,17 @@ async def info_get(request: Request):
         "cookie": dict(request.cookies),
         "body": (await request.body()).decode("utf-8"),
     }
-    pprint(body)
+    print(body)
     return Response(
         content=json.dumps(body, ensure_ascii=False),
         status_code=200,
-        headers={},
-        media_type="application/json",
+        headers={
+            "Content-Type": "application/json",
+        },
     )
 
-@app.post("/info/", tags=["Info"])
+# POSTメソッド
+@app.post("/info/{id}", tags=["Info"])
 async def info_post(request: Request):
     body = {
         "url": str(request.url),
@@ -50,24 +54,33 @@ async def info_post(request: Request):
         "cookie": dict(request.cookies),
         "body": (await request.body()).decode("utf-8"),
     }
-    pprint(body)
+    print(body)
     return Response(
         content=json.dumps(body, ensure_ascii=False),
         status_code=200,
-        headers={},
-        media_type="application/json",
+        headers={
+            "Content-Type": "application/json",
+        },
     )
 
 
 ###########################################
 # Legacyな実装
 ###########################################
+from fastapi.responses import RedirectResponse
+
+ITEMS = {
+    1: {"id": 1, "name": "Apple" , "price": 100},
+    2: {"id": 2, "name": "Banana", "price": 200},
+    3: {"id": 3, "name": "Orange", "price": 150},
+}
+
 @app.get("/items/", tags=["Legacy"])
 async def read_items_get(request: Request):
     search = request.query_params.get("search", None)
     rows = []
     for id, e in ITEMS.items():
-        if search and (search not in e["name"]):
+        if search and (search not in e["name"].lower()):
             continue
 
         row = f"""
@@ -104,8 +117,7 @@ async def read_items_get(request: Request):
     return Response(
         content=html,
         status_code=200,
-        headers={},
-        media_type="text/html",
+        headers={ "Content-Type": "text/html; charset=UTF-8" },
     )
 
 
@@ -117,8 +129,7 @@ async def read_item_get(request: Request):
         return Response(
             content=f"<h1>ID={item_id} Not Found</h1>",
             status_code=404,
-            headers={},
-            media_type="text/html",
+            headers={ "Content-Type": "text/html; charset=UTF-8" },
         )
     html = f"""
     <DOCTYPE html>
@@ -141,8 +152,7 @@ async def read_item_get(request: Request):
     return Response(
         content=html,
         status_code=200,
-        headers={},
-        media_type="text/html",
+        headers={ "Content-Type": "text/html; charset=UTF-8" },
     )
 
 
@@ -177,8 +187,7 @@ async def create_item_get(request: Request):
     return Response(
         content=html,
         status_code=200,
-        headers={},
-        media_type="text/html",
+        headers={ "Content-Type": "text/html; charset=UTF-8" },
     )
 
 
@@ -192,11 +201,11 @@ async def create_item_post(request: Request):
         return Response(
             content=f"<h1>ID={id} Already Exists</h1>",
             status_code=400,
-            headers={},
-            media_type="text/html",
+            headers={ "Content-Type": "text/html; charset=UTF-8" },
         )
     ITEMS[id] = { "id": id, "name": name, "price": price }
-    return RedirectResponse(url="/items/", status_code=302)
+    # アイテム詳細ページにリダイレクト
+    return RedirectResponse(url=f"/items/{id}", status_code=302)
 
 @app.post("/items/{item_id}/delete/", tags=["Legacy"])
 async def delete_item_post(request: Request):
@@ -205,17 +214,19 @@ async def delete_item_post(request: Request):
         return Response(
             content=f"<h1>ID={item_id} Not Found</h1>",
             status_code=400,
-            headers={},
-            media_type="text/html",
+            headers={ "Content-Type": "text/html; charset=UTF-8" },
         )
     del ITEMS[item_id]
     return RedirectResponse(url="/items/", status_code=302)
 
 
 ###########################################
-# RESTな実装
+# モダンな実装
 #   - RESTful Web API の設計(Microsoft): https://learn.microsoft.com/ja-jp/azure/architecture/best-practices/api-design
 ###########################################
+from pydantic import BaseModel
+from typing import Optional
+
 class ItemSchema(BaseModel):
     id: int
     name: str
@@ -225,19 +236,19 @@ class ItemsSchema(BaseModel):
     items: list[ItemSchema]
 
 
-@app.get("/api/items/", response_model=ItemsSchema, tags=["REST"])
+@app.get("/api/items/", response_model=ItemsSchema, tags=["Modern"])
 async def read_items_api (
     search: Optional[str] = None,
 ):
     ret = {"items": []}
-    for id, e in ITEMS.items():
+    for _, e in ITEMS.items():
         if search and (search not in e["name"]):
             continue
         ret["items"].append(e)
     return ret
 
 
-@app.get("/api/items/{item_id}", response_model=ItemSchema, tags=["REST"])
+@app.get("/api/items/{item_id}", response_model=ItemSchema, tags=["Modern"])
 async def read_item_api(
     item_id: int,
 ):
@@ -246,7 +257,7 @@ async def read_item_api(
     return ITEMS[item_id]
 
 
-@app.post("/api/items/create/", response_model=ItemSchema, tags=["REST"])
+@app.post("/api/items/create/", response_model=ItemSchema, tags=["Modern"])
 async def create_item_api(
     body: ItemSchema,
 ):
@@ -256,7 +267,7 @@ async def create_item_api(
     ITEMS[body.id] = item
     return item
 
-@app.delete("/api/items/{item_id}/", tags=["REST"])
+@app.delete("/api/items/{item_id}/", tags=["Modern"])
 async def delete_item_api(
     item_id: int,
 ):

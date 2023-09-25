@@ -59,12 +59,12 @@ def sample(
 さて、先程簡単なAPIを実装してみたわけですが、あまりピンとこない方もいるのではないでしょうか。  
 様々なWebフレームワークが流行っては廃れを繰り返す中で、Webフレームワークはなるべく簡単に短い記述で実装できるように改良されてきました。  
 そのため、初めてWebフレームワークに触れ方の中には「これだけ?」「なんか動いているけど正直良くわからない、、、」というような感想を抱いてしまう方もいるのではないでしょうか。
-そこで、この章ではあえて昔ながらのwebアプリを実装することで、webの仕組を理解しながらその問題点を見ていきましょう。
+そこで、この章ではあえて昔ながらのwebアプリを実装することで、webの仕組を理解し、その問題点にフォーカスしていきましょう。
 
 ## RequestとResponseを確認する
 
 まず、HTTPリクエストとHTTPレスポンスの扱いを見てみましょう。  
-一般的にリクエストオブジェクトとレスポンスオブジェクトを直接利用するような実装をすることはありませんが、FastAPIでもリクエストオブジェクト( `Request` )を受け取って、レスポンスオブジェクト( `Response` )を返却するという形式で実装することは可能です。  
+一般的にFastAPIにおいて、リクエストオブジェクトとレスポンスオブジェクトを直接利用することはありませんが、リクエストオブジェクト( `Request` )を受け取って、レスポンスオブジェクト( `Response` )を返却するといった実装することは可能です。  
 
 - [リクエストオブジェクト Request](https://www.starlette.io/requests/)  
   HTTPリクエストを表すオブジェクト。  
@@ -181,6 +181,7 @@ async def read_items_get(request: Request):
     rows = []
     for id, e in ITEMS.items():
         if search and (search not in e["name"].lower()):
+            # searchパラメータが指定されていてかつ、nameと中間一致しなければスキップ
             continue
 
         row = f"""
@@ -246,6 +247,7 @@ async def read_item_get(request: Request):
     # パスからitem_idを取得
     item_id = int(str(request.path_params.get("item_id")))
     if item_id not in ITEMS:
+        # アイテムが存在しなければエラー
         return Response(
             content=f"<h1>ID={item_id} Not Found</h1>",
             status_code=404,
@@ -342,11 +344,13 @@ async def create_item_get(request: Request):
 # 登録フォームを送信したときに送信したときに実行されるAPI
 @app.post("/items/create/", tags=["Legacy"])
 async def create_item_post(request: Request):
+    # formで入力された情報を取り出す
     form = await request.form()
     id = int(str(form["id"]))
     name = str(form["name"])
     price = int(str(form["price"]))
     if id in ITEMS:
+        # 指定したidがすでに存在していたらエラー
         return Response(
             content=f"<h1>ID={id} Already Exists</h1>",
             status_code=400,
@@ -380,6 +384,7 @@ async def create_item_post(request: Request):
 async def delete_item_post(request: Request):
     item_id = int(str(request.path_params.get("item_id")))
     if item_id not in ITEMS:
+        # 指定したidが存在しなければエラー
         return Response(
             content=f"<h1>ID={item_id} Not Found</h1>",
             status_code=400,

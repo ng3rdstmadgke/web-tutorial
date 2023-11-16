@@ -51,7 +51,7 @@ mkdir -p assets components composables layouts middleware modules pages plugins 
 コンポーザブル(composables) とはVueコンポーネントに合成(compose) 可能な汎用化された関数のことを指します。  
 コンポーザブルはVueコンポーネントで扱うデータや手続きを関数として提供し、処理の詳細をコンポーネントから隠ぺいする責務を負います。
 
-コンポーザブルは `components/` 配下に実装し、 `utils/` 配下のリソースと同様に自動インポートの対象となります。
+コンポーザブルは `composables/` 配下に実装し、 `utils/` 配下のリソースと同様に自動インポートの対象となります。
 
 ## アイテムAPIにアクセスするコンポーザブルの実装
 

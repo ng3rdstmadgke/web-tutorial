@@ -54,7 +54,7 @@ exit
 
 ```bash
 # アプリの起動
-./bin/run.sh chapter11 -m shell --sample
+./bin/run.sh chapter11 -m app --sample
 ```
 
 アプリが起動したら http://localhost:3000/ にアクセスしてみましょう。

@@ -36,12 +36,8 @@ npm install
 
 # 一度Nuxt3を起動してみましょう
 npm run dev
-```
 
-ブラウザから http://localhost:3000/ にアクセスしてみましょう
-
-```bash
-# ctrl + c でサーバーを終了させて開発shellからログアウトします。
+# 起動が確認出来たらctrl + c でサーバーを終了させて開発shellからログアウトします。
 exit
 ```
 

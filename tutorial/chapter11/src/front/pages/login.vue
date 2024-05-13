@@ -7,7 +7,7 @@
       <v-card class="pa-5">
         <v-card-title class="d-flex justify-center mb-3">
           <div>
-            <v-img :src="`/logo-no-background.png`" contain height="180"></v-img>
+            <v-img :src="`/logo-no-background.png`" contain height="180" width="180"></v-img>
           </div>
         </v-card-title>
         <v-form ref="loginForm" lazy-validation>

@@ -1,4 +1,4 @@
-FROM mysql:8
+FROM mysql:8.0
 
 COPY ./docker/mysql/check.sh /check.sh
 RUN chmod 755 /check.sh

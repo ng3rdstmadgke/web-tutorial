@@ -1,4 +1,4 @@
-from passlib.context import CryptContext
+import bcrypt
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -9,16 +9,15 @@ from env import Environment
 from typing import List, Callable
 from permission_service import PermissionType, PermissionService
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def hash(plain_password: str) -> str:
     """パスワードをハッシュ化する"""
-    return pwd_context.hash(plain_password)
+    return bcrypt.hashpw(plain_password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """plain_passwordが正しいパスワードかを検証する"""
-    return pwd_context.verify(plain_password, hashed_password)
+    return bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
 
 # OAuth2PasswordBearerのインスタンスをDependsで解決すると、
 # RequestのAuthorizationヘッダが `Bearer {token}` 形式であることを確認し、tokenをstrで返す

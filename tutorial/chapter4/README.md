@@ -176,12 +176,11 @@ username, password, ageをPOSTで受け取って、ユーザー作成を行うAP
 
 ```python
 # -- api/auth.py --
-from passlib.context import CryptContext
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+import bcrypt
 
 def hash(plain_password: str) -> str:
-    return pwd_context.hash(plain_password)
+    """パスワードをハッシュ化する"""
+    return bcrypt.hashpw(plain_password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 ```
 
 次に、POSTで受け取るデータとレスポンスで返却するデータの構造をクラスとして定義しましょう。
@@ -472,7 +471,7 @@ class Environment(BaseSettings):
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """plain_passwordが正しいパスワードかを検証する"""
-    return pwd_context.verify(plain_password, hashed_password)
+    return bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
 ```
 
 最後に、トークンを取得するAPIを追加します。

@@ -87,7 +87,6 @@ def create_user(session, data):
 このライブラリ、機能としてはクラスと辞書とjsonをシームレスに変換するだけですので、少し使い方を確認してみましょう。
 
 ```python
-from datetime import datetime
 from typing import List, Optional
 from pydantic import ConfigDict, BaseModel
 
@@ -484,7 +483,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 from env import Environment
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import Depends, APIRouter, HTTPException, status
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, UTC
 from jose import jwt, JWTError
 
 # ... 略 ...
@@ -511,7 +510,7 @@ def login_for_access_token(
         # JWT "sub" Claim : https://openid-foundation-japan.github.io/draft-ietf-oauth-json-web-token-11.ja.html#subDef
         "sub": user.username,
         "scopes": [],
-        "exp": datetime.utcnow() + timedelta(minutes=env.token_expire_minutes)
+        "exp": datetime.now(UTC) + timedelta(minutes=env.token_expire_minutes)
     }
 
     # トークンの生成

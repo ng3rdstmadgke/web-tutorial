@@ -1,5 +1,5 @@
 from typing import List
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, UTC
 
 from sqlalchemy.orm import Session
 from fastapi import Depends, APIRouter, HTTPException
@@ -133,7 +133,7 @@ def login_for_access_token(
         # JWT "sub" Claim : https://openid-foundation-japan.github.io/draft-ietf-oauth-json-web-token-11.ja.html#subDef
         "sub": user.username,
         "scopes": [],
-        "exp": datetime.utcnow() + timedelta(minutes=env.token_expire_minutes)
+        "exp": datetime.now(UTC) + timedelta(minutes=env.token_expire_minutes)
     }
 
     # トークンの生成

@@ -9,13 +9,13 @@
     "postinstall": "nuxt prepare"
   },
   "devDependencies": {
-    "@mdi/js": "^7.2.96",
+    "@mdi/js": "^7.4.47",
     "@nuxt/devtools": "latest",
-    "@types/node": "^18",
-    "nuxt": "^3.6.0",
-    "sass": "^1.63.6",
+    "@types/node": "^20",
+    "nuxt": "^3.11.2",
+    "sass": "^1.77.1",
     "typescript": "latest",
-    "vite-plugin-vuetify": "^1.0.2",
-    "vuetify": "^3.3.5"
+    "vite-plugin-vuetify": "^2.0.3",
+    "vuetify": "^3.6.6"
   }
 }

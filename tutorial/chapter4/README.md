@@ -86,6 +86,8 @@ def create_user(session, data):
 それを解決するのが `pydantic` というライブラリです。
 このライブラリ、機能としてはクラスと辞書とjsonをシームレスに変換するだけですので、少し使い方を確認してみましょう。
 
+- [Pydantic](https://docs.pydantic.dev/latest/)
+
 ```python
 from typing import List, Optional
 from pydantic import ConfigDict, BaseModel
@@ -103,15 +105,15 @@ data = {
 }
 
 # dataをUserオブジェクトに変換
-user = User.parse_obj(data)
+user = User.model_validate(data)
 print(user)  # id=1 username='yamada' age=35
 
 # Userオブジェクトをdictに変換
-user_dict = user.dict()
+user_dict = user.model_dump()
 print(user_dict)  # {'id': 1, 'username': 'yamada', 'age': 35}
 
 # Userオブジェクトをjsonに変換
-user_json = user.json()
+user_json = user.model_dump_json()
 print(user_json)  # {"id": 1, "username": "yamada", "age": 35}
 ```
 

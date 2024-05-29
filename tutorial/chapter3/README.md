@@ -113,7 +113,7 @@ class User(Base):
     #   https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html#one-to-many
     items = relationship(
         "Item",           # リレーションモデル名
-        back_populates="users",      # リレーション先の変数名
+        back_populates="user",      # リレーション先の変数名
         # カスケード: https://docs.sqlalchemy.org/en/14/orm/cascades.html
         #   "all, delete-orphan": userを削除したときに、関連する items を削除する
         #   "save-update": userを削除したときに、関連する items のuser_idをNullにする (default)
@@ -142,7 +142,7 @@ class Item(Base):
     updated = Column(DateTime, default=datetime.now, onupdate=datetime.now, nullable=False)
 
     #  usersテーブルとのリレーション
-    users = relationship("User", back_populates="items")
+    user = relationship("User", back_populates="items")
 
     def __repr__(self):
         return f"""<Items(id={self.id}, user_id={self.user_id}, title={self.title}, content={self.content})>"""

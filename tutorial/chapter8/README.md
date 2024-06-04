@@ -867,7 +867,7 @@ g.value = "hoge";
 
 
 **型境界** を利用して渡すべき型を制限することも可能です。  
-※ `<T extends Hhoge>` というような指定をすると `T` 型には `Hoge` 型の派生クラスを指定しなければなりません。
+※ `<T extends Hoge>` というような指定をすると `T` 型には `Hoge` 型の派生クラスを指定しなければなりません。
 
 
 ```ts
@@ -992,16 +992,14 @@ node dist/app.js
 これまでは `tsc` コマンドを利用して、引数やオプションでビルド対象のファイルや出力先などを指定してきましたが、毎回ビルド時に細かいオプションを指定するのは手間なので、 `tsconfig.json` を利用してTypeScriptのビルド設定を定義しましょう。  
 `tsconfig.json` にはビルド先のディレクトリや、トランスパイル後のJavaScriptのバージョン、どんなファイルをビルドに含めるかといった設定を記述します。
 
-```
-※ JavaScriptのバージョン
-TypeScriptはJavaScriptにトランスパイルすることで、node.jsやブラウザから実行できますが、JavaScriptにもバージョンが存在します。  
-ブラウザによって対応状況が異なるので、どのバージョンのJavaScriptにトランスパイルするかといった設定が必要になります。  
-
-ちなみに、JavaScriptの標準仕様は ECMAScript という名前で定められており、下記のようなバージョンが存在します。  
-ECMAScript: https://www.w3schools.com/js/js_versions.asp
-
-es5, es6(es2015), es2016, es2017, es2018, es2019, es2020, es2021
-```
+> ※ JavaScriptのバージョン
+> TypeScriptはJavaScriptにトランスパイルすることで、node.jsやブラウザから実行できますが、JavaScriptにもバージョンが存在します。  
+> ブラウザによって対応状況が異なるので、どのバージョンのJavaScriptにトランスパイルするかといった設定が必要になります。  
+> 
+> ちなみに、JavaScriptの標準仕様は ECMAScript という名前で定められており、下記のようなバージョンが存在します。  
+> ECMAScript: https://www.w3schools.com/js/js_versions.asp
+> 
+> es5, es6(es2015), es2016, es2017, es2018, es2019, es2020, es2021
 
 ```bash
 # 最初に作成したTypeScriptのプロジェクトに移動

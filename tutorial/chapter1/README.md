@@ -364,7 +364,7 @@ async def create_item_post(request: Request):
 
 動作確認
 
-- http://127.0.0.1:8018/items/create  
+- http://127.0.0.1:8018/items/create/  
 アイテムの登録フォームにアクセスして、アイテムを登録してみましょう。  
 
 ### アイテム削除

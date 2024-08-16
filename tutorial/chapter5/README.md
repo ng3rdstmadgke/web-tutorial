@@ -191,7 +191,7 @@ def get_list(
 def get_item(
     item_id: int,
     session: Session = Depends(get_session),
-    _: User = Depends(auth.get_current_user([PermissionType.ITEM_READ]))
+    _: User = Depends(auth.get_current_user)
 ):
     item = session.query(Item).filter(Item.id == item_id).first()
     if item is None:
